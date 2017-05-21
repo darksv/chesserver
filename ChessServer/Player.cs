@@ -13,6 +13,6 @@ namespace ChessServer
         public string Nick { get; set; }
 
         [JsonIgnore]
-        public TcpClient TcpClient { get; set; }
+        public Socket ClientSocket { get; set; }
     }
 }

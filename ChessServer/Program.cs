@@ -1,135 +1,23 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Linq;
-using System.Net;
-using System.Net.Sockets;
-using System.Text;
 
 namespace ChessServer
 {
-    public class ConnectionState
-    {
-        public Socket socket = null;
-        public const int BufferSize = 1024;
-        public byte[] buffer = new byte[BufferSize];
-        public StringBuilder stringBuilder = new StringBuilder();
-    }
-
-    //    private async Task HandleConnectionAsync(TcpClient tcpClient)
-    //    {
-    //    await Task.Yield();
-    //
-    //    var player = new Player
-    //        {
-    //            Id = Guid.NewGuid(),
-    //            Nick = "alojzy"
-    //        };
-    //
-    //    using (var networkStream = tcpClient.GetStream())
-    //    {
-    //        while (true)
-    //        {
-    //            await WriteAsync(networkStream, ">> ");
-    //
-    //            var request = await ReadAsync(networkStream, 100);
-    //            var response = JsonConvert.SerializeObject(player, Formatting.None) + "\n";
-    //            await WriteAsync(networkStream, response);
-    //        }
-    //    }
-    //    }
-
-    public class Server
-    {
-        public void Start()
-        {
-            var localEndPoint = new IPEndPoint(IPAddress.Any, 11000);
-            var listener = new Socket(AddressFamily.InterNetwork, SocketType.Stream, ProtocolType.Tcp);
-
-            try
-            {
-                listener.Bind(localEndPoint);
-                listener.Listen(int.MaxValue);
-
-                while (true)
-                {
-                    var clientSocket = listener.Accept();
-
-                    Connect?.Invoke(this, new ConnectEventArgs { ClientSocket = clientSocket });
-
-                    var state = new ConnectionState { socket = clientSocket };
-                    clientSocket.BeginReceive(state.buffer, 0, ConnectionState.BufferSize, 0, ReadCallback, state);
-                }
-            }
-            catch (Exception e)
-            {
-                Console.WriteLine(e.ToString());
-            }
-        }
-
-        private void ReadCallback(IAsyncResult ar)
-        {
-            var connectionState = (ConnectionState)ar.AsyncState;
-            var clientSocket = connectionState.socket;
-
-            int bytesRead = clientSocket.EndReceive(ar);
-            if (bytesRead <= 0)
-            {
-                return;
-            }
-
-            var sb = connectionState.stringBuilder;
-            sb.Append(Encoding.ASCII.GetString(connectionState.buffer, 0, bytesRead));
-
-            var parts = sb.ToString().Split('\n');
-
-            sb.Clear();
-            sb.Append(parts.Last());
-
-            foreach (var part in parts.Take(parts.Length - 1))
-            {
-                Receive?.Invoke(this, new ReceiveEventArgs
-                {
-                    ClientSocket = connectionState.socket,
-                    Message = part
-                });
-            }
-
-            clientSocket.BeginReceive(connectionState.buffer, 0, ConnectionState.BufferSize, 0, ReadCallback, connectionState);
-        }
-
-        public void Send(Socket handler, string data)
-        {
-            byte[] byteData = Encoding.ASCII.GetBytes(data);
-
-            handler.BeginSend(byteData, 0, byteData.Length, 0,
-                SendCallback, handler);
-        }
-
-        private void SendCallback(IAsyncResult ar)
-        {
-            try
-            {
-                var clientSocket = (Socket)ar.AsyncState;
-
-                int bytesSent = clientSocket.EndSend(ar);
-                Console.WriteLine("Sent {0} bytes to client.", bytesSent);
-            }
-            catch (Exception e)
-            {
-                Console.WriteLine(e.ToString());
-            }
-        }
-
-        public event EventHandler<ReceiveEventArgs> Receive;
-        public event EventHandler<ConnectEventArgs> Connect;
-    }
 
     public class ChessServer
     {
         private static readonly Server _server = new Server();
+        private static readonly object _lock = new object();
+        private static readonly List<Player> _players = new List<Player>();
+
         public static int Main(string[] args)
         {
-            _server.Receive += _server_Receive;
+            Console.WriteLine("Starting server...");
+
+            _server.Receive += ServerOnReceive;
             _server.Connect += ServerOnConnect;
+            _server.Disconnect += ServerOnDisconnect;
             _server.Start();
 
 
@@ -138,17 +26,58 @@ namespace ChessServer
             return 0;
         }
 
-        private static void ServerOnConnect(object sender, ConnectEventArgs args)
+        private static void ServerOnDisconnect(object sender, DisconnectEventArgs args)
         {
-            Console.WriteLine($"{DateTime.Now} We've got some client! Wow - {args.ClientSocket.RemoteEndPoint}");
+            lock (_lock)
+            {
+                var player = _players.First(p => p.ClientSocket == args.ClientSocket);
+                _players.Remove(player);
+            }
+
+            Console.WriteLine($"{DateTime.Now} We've lost connection with {args.ClientSocket.RemoteEndPoint}");
         }
 
-        private static void _server_Receive(object sender, ReceiveEventArgs args)
+        private static void ServerOnConnect(object sender, ConnectEventArgs args)
+        {
+            Console.WriteLine($"{DateTime.Now} We've established connection with {args.ClientSocket.RemoteEndPoint}");
+
+            var player = new Player
+            {
+                Id = Guid.NewGuid(),
+                Nick = "Anon",
+                ClientSocket = args.ClientSocket
+            };
+
+            lock (_lock)
+            {
+                _players.Add(player);
+            }
+        }
+
+        private static void ServerOnReceive(object sender, ReceiveEventArgs args)
         {
             var s = (Server) sender;
 
-            Console.WriteLine($"{DateTime.Now} {args.ClientSocket.RemoteEndPoint} {args.Message}");
-            s.Send(args.ClientSocket, "OK\n");
+            Player currentPlayer;
+            IEnumerable<Player> otherPlayers;
+            lock (_players)
+            {
+                currentPlayer = _players.First(p => p.ClientSocket == args.ClientSocket);
+                otherPlayers = _players.Where(p => p != currentPlayer).ToArray();
+            }
+
+            if (args.Message.StartsWith("/nick"))
+            {
+                currentPlayer.Nick = args.Message.Substring(5).Trim();
+            }
+            else
+            {
+                Console.WriteLine($"{DateTime.Now} {currentPlayer.Nick} [{args.ClientSocket.RemoteEndPoint}] {args.Message}");
+                foreach (var player in otherPlayers)
+                {
+                    s.Send(player.ClientSocket, currentPlayer.Nick + ": " + args.Message + "\n");
+                }
+            }
         }
     }
 }
