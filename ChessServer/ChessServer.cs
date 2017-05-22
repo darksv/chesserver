@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Net.Sockets;
 
 namespace ChessServer
 {
@@ -32,43 +33,66 @@ namespace ChessServer
         private void ServerOnConnect(object sender, ConnectEventArgs args)
         {
             Console.WriteLine($"{DateTime.Now} We've established connection with {args.ClientSocket.RemoteEndPoint}");
-
-            var player = new Player
-            {
-                Id = Guid.NewGuid(),
-                Nick = "Anon",
-                ClientSocket = args.ClientSocket
-            };
-
-            lock (_lock)
-            {
-                _players.Add(player);
-            }
         }
 
         private void ServerOnReceive(object sender, ReceiveEventArgs args)
         {
             var s = (Server) sender;
+            
+            var @params = args.Message.Split(';');
+            switch (@params[0])
+            {
+                case "join":
+                    var player = FindPlayerBySocket(args.ClientSocket);
+                    if (player != null)
+                    {
+                        s.Send(args.ClientSocket, "join;1;already_joined\n");
+                        return;
+                    }
+                    var nick = @params[1];
+                    if (IsNickTaken(nick))
+                    {
+                        s.Send(args.ClientSocket, "join;2;nick_taken\n");
+                        return;
+                    }
+                    
+                    player = new Player
+                    {
+                        Id = Guid.NewGuid(),
+                        Nick = nick,
+                        ClientSocket = args.ClientSocket
+                    };
 
-            Player currentPlayer;
-            IEnumerable<Player> otherPlayers;
-            lock (_players)
-            {
-                currentPlayer = _players.First(p => p.ClientSocket == args.ClientSocket);
-                otherPlayers = _players.Where(p => p != currentPlayer).ToArray();
-            }
+                    lock (_lock)
+                    {
+                        _players.Add(player);
+                    }
 
-            if (args.Message.StartsWith("/nick"))
-            {
-                currentPlayer.Nick = args.Message.Substring(5).Trim();
+                    s.Send(args.ClientSocket, $"join;0;{player.Id}\n");
+
+                    break;
+                case "ping":
+                    s.Send(args.ClientSocket, "pong\n");
+                    break;
+                default:
+                    Console.WriteLine("Error: unknown command");
+                    break;
             }
-            else
+        }
+
+        private bool IsNickTaken(string nick)
+        {
+            lock (_lock)
             {
-                Console.WriteLine($"{DateTime.Now} {currentPlayer.Nick} [{args.ClientSocket.RemoteEndPoint}] {args.Message}");
-                foreach (var player in otherPlayers)
-                {
-                    s.Send(player.ClientSocket, currentPlayer.Nick + ": " + args.Message + "\n");
-                }
+                return _players.Any(p => p.Nick == nick);
+            }
+        }
+
+        private Player FindPlayerBySocket(Socket socket)
+        {
+            lock (_lock)
+            {
+                return _players.FirstOrDefault(p => p.ClientSocket == socket);
             }
         }
     }
