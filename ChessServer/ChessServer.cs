@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Net.Sockets;
+using Newtonsoft.Json;
 
 namespace ChessServer
 {
@@ -25,17 +26,17 @@ namespace ChessServer
             Socket = socket;
         }
     }
-
+    
     public class ChessServer
     {
         private readonly Server _server = new Server();
         private readonly object _lock = new object();
         private readonly List<Client> _clients = new List<Client>();
-        private readonly Dictionary<string, Action<Action<string>, Client, string[]>> _handlers;
+        private readonly Dictionary<string, Action<Server, Client, string>> _handlers;
 
         public ChessServer()
         {
-            _handlers = new Dictionary<string, Action<Action<string>, Client, string[]>>
+            _handlers = new Dictionary<string, Action<Server, Client, string>>
             {
                 {"join", HandleJoin},
                 {"ping", HandlePing},
@@ -68,7 +69,6 @@ namespace ChessServer
         private void ServerOnConnect(object sender, ConnectEventArgs args)
         {
             var client = new Client(args.ClientSocket);
-
             lock (_lock)
             {
                 _clients.Add(client);
@@ -81,12 +81,18 @@ namespace ChessServer
         {
             var s = (Server) sender;
 
-            var client = FindClientBySocket(args.ClientSocket);
-
-            var @params = args.Message.Split(';');
-            if (_handlers.TryGetValue(@params[0], out var handler))
+            Client client;
+            lock (_lock)
             {
-                handler(x => s.Send(args.ClientSocket, x), client, @params);
+                client = _clients.FirstOrDefault(p => p.Socket == args.ClientSocket);
+            }
+
+            // TODO: handle illformed message
+            var message = JsonConvert.DeserializeObject<Message>(args.Message);
+            var messageType = message?.Type ?? string.Empty;
+            if (_handlers.TryGetValue(messageType, out var handler))
+            {
+                handler(s, client, args.Message);
             }
             else
             {
@@ -94,23 +100,24 @@ namespace ChessServer
             }
         }
 
-        private void HandleJoin(Action<string> send, Client client, string[] args)
+        private void HandleJoin(Server server, Client client, string data)
         {
             if (client.Status != ClientStatus.Connected)
             {
-                send("join;1;already_joined\n");
+                server.Send(client.Socket, MakeResponse(new JoinResponse(JoinStatus.AlreadyJoined)));
                 return;
             }
-            var nick = args[1];
+
+            var nick = JsonConvert.DeserializeObject<JoinRequest>(data).Nick;
             if (IsNickTaken(nick))
             {
-                send("join;2;nick_taken\n");
+                server.Send(client.Socket, MakeResponse(new JoinResponse(JoinStatus.NickExists)));
                 return;
             }
 
             client.Nick = nick;
             client.Status = ClientStatus.Joined;
-            send($"join;0;{client.Id}\n");
+            server.Send(client.Socket, MakeResponse(new JoinResponse(JoinStatus.Success)));
 
             Client[] clients;
             lock (_lock)
@@ -118,17 +125,71 @@ namespace ChessServer
                 clients = _clients.Where(c => c != client && c.Status == ClientStatus.Joined).ToArray();
             }
 
-            send($"clients;{string.Join(",", clients.Select(c => c.Nick))}\n");
+            server.Send(client.Socket, MakeResponse(new OnlinePlayers
+            {
+                Players = clients
+                    .Select(c => new PlayerItem
+                    {
+                        Id = c.Id,
+                        Nick = c.Nick,
+                        Status = c.Status
+                    })
+                    .ToArray()
+            }));
         }
 
-        private void HandlePing(Action<string> send, Client client, string[] args)
+        private string MakeJson(object value)
         {
-            send("pong\n");
+            return JsonConvert.SerializeObject(value, Formatting.None);
         }
 
-        private void HandleInvite(Action<string> send, Client client, string[] args)
+        private string MakeResponse<T>(T value) 
+            where T : Message
         {
+            if (string.IsNullOrEmpty(value.Type))
+            {
+                var messageTypeAttribute = typeof(T)
+                    .GetCustomAttributes(false)
+                    .OfType<MessageTypeAttribute>()
+                    .FirstOrDefault();
+                value.Type = messageTypeAttribute?.Type ?? string.Empty;
+            }
             
+            return $"{MakeJson(value)}\n";
+        }
+
+        private void HandlePing(Server server, Client client, string data)
+        {
+            server.Send(client.Socket, MakeResponse(new PongResponse()));
+        }
+
+        private void HandleInvite(Server server, Client client, string data)
+        {
+            var clientId = JsonConvert.DeserializeObject<InviteSendRequest>(data).Id;
+            if (clientId == client.Id)
+            {
+                server.Send(client.Socket, MakeResponse(new InviteSendResponse(InviteStatus.SelfInvite)));
+                return;
+            }
+
+            Client invitedClient;
+            lock (_lock)
+            {
+                invitedClient = _clients.FirstOrDefault(c => c.Id == clientId);
+            }
+
+            if (invitedClient == null)
+            {
+                server.Send(client.Socket, MakeResponse(new InviteSendResponse(InviteStatus.PlayerNotExist)));
+                return;
+            }
+
+            server.Send(client.Socket, MakeResponse(new InviteSendResponse(InviteStatus.Success)));
+            server.Send(invitedClient.Socket,
+                MakeResponse(new InviteReceiveRequest
+                {
+                    Player = new PlayerItem {Id = client.Id, Nick = client.Nick, Status = client.Status}
+                }));
         }
 
         private bool IsNickTaken(string nick)
@@ -136,14 +197,6 @@ namespace ChessServer
             lock (_lock)
             {
                 return _clients.Any(p => p.Nick == nick);
-            }
-        }
- 
-        private Client FindClientBySocket(Socket socket)
-        {
-            lock (_lock)
-            {
-                return _clients.FirstOrDefault(p => p.Socket == socket);
             }
         }
     }
