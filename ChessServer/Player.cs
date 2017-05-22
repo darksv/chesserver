@@ -14,5 +14,8 @@ namespace ChessServer
 
         [JsonIgnore]
         public Socket ClientSocket { get; set; }
+
+        [JsonIgnore]
+        public Game Game { get; set; }
     }
 }
