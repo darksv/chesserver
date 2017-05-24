@@ -22,7 +22,7 @@ namespace ChessServer
                 {
                     var clientSocket = listener.Accept();
 
-                    Connect?.Invoke(this, new ConnectEventArgs { ClientSocket = clientSocket });
+                    Connect?.Invoke(this, new ConnectionEventArgs(clientSocket));
 
                     var state = new ConnectionState { Socket = clientSocket };
                     clientSocket.BeginReceive(state.Buffer, 0, ConnectionState.BufferSize, 0, ReadCallback, state);
@@ -76,7 +76,7 @@ namespace ChessServer
             }
             catch (SocketException e)
             {
-                Disconnect?.Invoke(this, new DisconnectEventArgs {ClientSocket = handler});
+                Disconnect?.Invoke(this, new ConnectionEventArgs(handler));
 
                 Console.WriteLine($"{e.GetType().FullName}: {e.Message}");
             }
@@ -96,7 +96,7 @@ namespace ChessServer
         }
 
         public event EventHandler<ReceiveEventArgs> Receive;
-        public event EventHandler<ConnectEventArgs> Connect;
-        public event EventHandler<DisconnectEventArgs> Disconnect;
+        public event EventHandler<ConnectionEventArgs> Connect;
+        public event EventHandler<ConnectionEventArgs> Disconnect;
     }
 }

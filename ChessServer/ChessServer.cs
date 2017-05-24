@@ -53,7 +53,7 @@ namespace ChessServer
             _server.Start();
         }
 
-        private void ServerOnDisconnect(object sender, DisconnectEventArgs args)
+        private void ServerOnDisconnect(object sender, ConnectionEventArgs args)
         {
             lock (_lock)
             {
@@ -67,7 +67,7 @@ namespace ChessServer
             Console.WriteLine($"{DateTime.Now} We've lost connection with {args.ClientSocket.RemoteEndPoint}");
         }
 
-        private void ServerOnConnect(object sender, ConnectEventArgs args)
+        private void ServerOnConnect(object sender, ConnectionEventArgs args)
         {
             var client = new Client(args.ClientSocket);
             lock (_lock)

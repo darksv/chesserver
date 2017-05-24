@@ -40,9 +40,8 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="ChessServer.cs" />
-    <Compile Include="ConnectEventArgs.cs" />
+    <Compile Include="ConnectionEventArgs.cs" />
     <Compile Include="ConnectionState.cs" />
-    <Compile Include="DisconnectEventArgs.cs" />
     <Compile Include="Messages.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
