@@ -1,32 +1,10 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Net.Sockets;
 using Newtonsoft.Json;
 
 namespace ChessServer
 {
-    public enum ClientStatus
-    {
-        Connected,
-        Joined,
-        OnGame,
-        Disconnected
-    }
-
-    public class Client
-    {
-        public ClientStatus Status { get; set; } = ClientStatus.Connected;
-        public Socket Socket { get; }
-        public Guid Id { get; } = Guid.NewGuid();
-        public string Nick { get; set; } = string.Empty;
-
-        public Client(Socket socket)
-        {
-            Socket = socket;
-        }
-    }
-    
     public class ChessServer
     {
         private readonly Action<object> _logger;
