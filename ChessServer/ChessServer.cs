@@ -188,23 +188,21 @@ namespace ChessServer
 
         private void HandleGetPlayers(Client client, string data)
         {
-            Client[] clients;
+            PlayerItem[] players;
             lock (_lock)
             {
-                clients = _clients.Where(c => c.Status == ClientStatus.Joined).ToArray();
-            }
-
-            Send(client, new OnlinePlayers
-            {
-                Players = clients
+                players = _clients
+                    .Where(c => c.Status == ClientStatus.Joined)
                     .Select(c => new PlayerItem
                     {
                         Id = c.Id,
                         Nick = c.Nick,
                         Status = c.Status
                     })
-                    .ToArray()
-            });
+                    .ToArray();
+            }
+
+            Send(client, new OnlinePlayers {Players = players});
         }
 
         #endregion
