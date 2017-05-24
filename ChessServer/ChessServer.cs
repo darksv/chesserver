@@ -32,15 +32,16 @@ namespace ChessServer
         private readonly Server _server = new Server();
         private readonly object _lock = new object();
         private readonly List<Client> _clients = new List<Client>();
-        private readonly Dictionary<string, Action<Server, Client, string>> _handlers;
+        private readonly Dictionary<string, Action<Client, string>> _handlers;
 
         public ChessServer()
         {
-            _handlers = new Dictionary<string, Action<Server, Client, string>>
+            _handlers = new Dictionary<string, Action<Client, string>>
             {
                 {"join", HandleJoin},
                 {"ping", HandlePing},
-                {"invite", HandleInvite}
+                {"send_invite", HandleSendInvite},
+                {"answer_invite", HandleAnswerInvite}
             };
         }
 
@@ -79,8 +80,6 @@ namespace ChessServer
 
         private void ServerOnReceive(object sender, ReceiveEventArgs args)
         {
-            var s = (Server) sender;
-
             Client client;
             lock (_lock)
             {
@@ -92,7 +91,7 @@ namespace ChessServer
             var messageType = message?.Type ?? string.Empty;
             if (_handlers.TryGetValue(messageType, out var handler))
             {
-                handler(s, client, args.Message);
+                handler(client, args.Message);
             }
             else
             {
@@ -100,24 +99,31 @@ namespace ChessServer
             }
         }
 
-        private void HandleJoin(Server server, Client client, string data)
+        #region Message Handlers
+
+        private void HandlePing(Client client, string data)
+        {
+            Send(client, new PongResponse());
+        }
+
+        private void HandleJoin(Client client, string data)
         {
             if (client.Status != ClientStatus.Connected)
             {
-                server.Send(client.Socket, MakeResponse(new JoinResponse(JoinStatus.AlreadyJoined)));
+                Send(client, new JoinResponse(JoinStatus.AlreadyJoined));
                 return;
             }
 
             var nick = JsonConvert.DeserializeObject<JoinRequest>(data).Nick;
             if (IsNickTaken(nick))
             {
-                server.Send(client.Socket, MakeResponse(new JoinResponse(JoinStatus.NickExists)));
+                Send(client, new JoinResponse(JoinStatus.NickExists));
                 return;
             }
 
             client.Nick = nick;
             client.Status = ClientStatus.Joined;
-            server.Send(client.Socket, MakeResponse(new JoinResponse(JoinStatus.Success)));
+            Send(client, new JoinResponse(JoinStatus.Success));
 
             Client[] clients;
             lock (_lock)
@@ -125,7 +131,7 @@ namespace ChessServer
                 clients = _clients.Where(c => c != client && c.Status == ClientStatus.Joined).ToArray();
             }
 
-            server.Send(client.Socket, MakeResponse(new OnlinePlayers
+            Send(client, new OnlinePlayers
             {
                 Players = clients
                     .Select(c => new PlayerItem
@@ -135,12 +141,65 @@ namespace ChessServer
                         Status = c.Status
                     })
                     .ToArray()
-            }));
+            });
         }
 
-        private string MakeJson(object value)
+        private void HandleSendInvite(Client client, string data)
         {
-            return JsonConvert.SerializeObject(value, Formatting.None);
+            var clientId = JsonConvert.DeserializeObject<InviteSendRequest>(data).PlayerId;
+            if (clientId == client.Id)
+            {
+                Send(client, new InviteSendResponse(InviteSendStatus.SelfInvite));
+                return;
+            }
+
+            Client invitedClient;
+            lock (_lock)
+            {
+                invitedClient = _clients.FirstOrDefault(c => c.Id == clientId);
+            }
+
+            if (invitedClient == null)
+            {
+                Send(client, new InviteSendResponse(InviteSendStatus.PlayerNotExist));
+                return;
+            }
+
+            Send(client, new InviteSendResponse(InviteSendStatus.Success));
+            Send(invitedClient, new InviteSendRequest { PlayerId = client.Id });
+        }
+
+        private void HandleAnswerInvite(Client client, string data)
+        {
+            var response = JsonConvert.DeserializeObject<InviteAnswerResponse>(data);
+            if (response.PlayerId == client.Id)
+            {
+                return;
+            }
+
+            Client invitedClient;
+            lock (_lock)
+            {
+                invitedClient = _clients.FirstOrDefault(c => c.Id == response.PlayerId);
+            }
+
+            if (invitedClient == null)
+            {
+                return;
+            }
+
+            if (response.Status == InviteAnswerStatus.Accept)
+            {
+                // TODO: create game
+            }
+        }
+
+        #endregion
+        
+        private void Send<T>(Client client, T message)
+            where T : Message
+        {
+            _server.Send(client.Socket, MakeResponse(message));
         }
 
         private string MakeResponse<T>(T value) 
@@ -154,42 +213,9 @@ namespace ChessServer
                     .FirstOrDefault();
                 value.Type = messageTypeAttribute?.Type ?? string.Empty;
             }
-            
-            return $"{MakeJson(value)}\n";
-        }
 
-        private void HandlePing(Server server, Client client, string data)
-        {
-            server.Send(client.Socket, MakeResponse(new PongResponse()));
-        }
-
-        private void HandleInvite(Server server, Client client, string data)
-        {
-            var clientId = JsonConvert.DeserializeObject<InviteSendRequest>(data).Id;
-            if (clientId == client.Id)
-            {
-                server.Send(client.Socket, MakeResponse(new InviteSendResponse(InviteStatus.SelfInvite)));
-                return;
-            }
-
-            Client invitedClient;
-            lock (_lock)
-            {
-                invitedClient = _clients.FirstOrDefault(c => c.Id == clientId);
-            }
-
-            if (invitedClient == null)
-            {
-                server.Send(client.Socket, MakeResponse(new InviteSendResponse(InviteStatus.PlayerNotExist)));
-                return;
-            }
-
-            server.Send(client.Socket, MakeResponse(new InviteSendResponse(InviteStatus.Success)));
-            server.Send(invitedClient.Socket,
-                MakeResponse(new InviteReceiveRequest
-                {
-                    Player = new PlayerItem {Id = client.Id, Nick = client.Nick, Status = client.Status}
-                }));
+            var json = JsonConvert.SerializeObject(value, Formatting.None);
+            return $"{json}\n";
         }
 
         private bool IsNickTaken(string nick)

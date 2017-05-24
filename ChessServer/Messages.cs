@@ -19,12 +19,9 @@ namespace ChessServer
         }
     }
 
+    [MessageType("pong")]
     public class PongResponse : Message
     {
-        public PongResponse()
-        {
-            Type = "pong";
-        }
     }
 
     public class PlayerItem
@@ -72,35 +69,63 @@ namespace ChessServer
         }
     }
 
-    public enum InviteStatus
+    public enum InviteSendStatus
     {
         Success,
         SelfInvite,
         PlayerNotExist,
     }
 
-    [MessageType("invite")]
+    [MessageType("send_invite")]
     public class InviteSendRequest : Message
     {
-        [JsonProperty(PropertyName = "id")]
-        public Guid Id { get; set; }
+        [JsonProperty(PropertyName = "player_id")]
+        public Guid PlayerId { get; set; }
     }
 
-    [MessageType("invite")]
-    public class InviteReceiveRequest : Message
-    {
-        [JsonProperty(PropertyName = "player")]
-        public PlayerItem Player { get; set; }
-    }
-
-    [MessageType("invite")]
+    [MessageType("send_invite")]
     public class InviteSendResponse : Message
     {
-        [JsonProperty(PropertyName = "status")]
-        public InviteStatus Status { get; set; }
+        [JsonProperty(PropertyName = "player_id")]
+        public Guid PlayerId { get; set; }
 
-        public InviteSendResponse(InviteStatus status)
+        [JsonProperty(PropertyName = "status")]
+        public InviteSendStatus Status { get; set; }
+
+        public InviteSendResponse(InviteSendStatus status)
         {
+            Status = status;
+        }
+    }
+
+    public enum InviteAnswerStatus
+    {
+        Accept,
+        Reject
+    }
+
+    [MessageType("answer_invite")]
+    public class InviteAnswerRequest : Message
+    {
+        [JsonProperty(PropertyName = "player_id")]
+        public Guid PlayerId { get; set; }
+
+        [JsonProperty(PropertyName = "status")]
+        public InviteAnswerStatus Status { get; set; }
+    }
+
+    [MessageType("answer_invite")]
+    public class InviteAnswerResponse : Message
+    {
+        [JsonProperty(PropertyName = "player_id")]
+        public Guid PlayerId { get; set; }
+
+        [JsonProperty(PropertyName = "status")]
+        public InviteAnswerStatus Status { get; set; }
+
+        public InviteAnswerResponse(Guid playerId, InviteAnswerStatus status)
+        {
+            PlayerId = playerId;
             Status = status;
         }
     }
