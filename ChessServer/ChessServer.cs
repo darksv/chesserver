@@ -125,9 +125,16 @@ namespace ChessServer
             }
 
             var nick = JsonConvert.DeserializeObject<JoinRequest>(data).Nick;
+
+            if (string.IsNullOrWhiteSpace(nick))
+            {
+                Send(client, new JoinResponse(JoinStatus.NickInvalid));
+                return;
+            }
+
             if (IsNickTaken(nick))
             {
-                Send(client, new JoinResponse(JoinStatus.NickExists));
+                Send(client, new JoinResponse(JoinStatus.NickOccupied));
                 return;
             }
 

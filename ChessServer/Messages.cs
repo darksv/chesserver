@@ -53,7 +53,8 @@ namespace ChessServer
     public enum JoinStatus
     {
         Success,
-        NickExists,
+        NickInvalid,
+        NickOccupied,
         AlreadyJoined
     }
 
