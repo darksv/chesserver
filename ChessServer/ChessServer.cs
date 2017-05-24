@@ -29,13 +29,15 @@ namespace ChessServer
     
     public class ChessServer
     {
+        private readonly Action<object> _logger;
         private readonly Server _server = new Server();
         private readonly object _lock = new object();
         private readonly List<Client> _clients = new List<Client>();
         private readonly Dictionary<string, Action<Client, string>> _handlers;
 
-        public ChessServer()
+        public ChessServer(Action<object> logger)
         {
+            _logger = logger;
             _handlers = new Dictionary<string, Action<Client, string>>
             {
                 {"join", HandleJoin},
@@ -54,6 +56,11 @@ namespace ChessServer
             _server.Start();
         }
 
+        private void Log(object value)
+        {
+            _logger.Invoke(value);
+        }
+
         private void ServerOnDisconnect(object sender, ConnectionEventArgs args)
         {
             lock (_lock)
@@ -65,7 +72,7 @@ namespace ChessServer
                 }
             }
 
-            Console.WriteLine($"{DateTime.Now} We've lost connection with {args.ClientSocket.RemoteEndPoint}");
+            Log($"We've lost connection with {args.ClientSocket.RemoteEndPoint}");
         }
 
         private void ServerOnConnect(object sender, ConnectionEventArgs args)
@@ -76,7 +83,7 @@ namespace ChessServer
                 _clients.Add(client);
             }
 
-            Console.WriteLine($"{DateTime.Now} We've established connection with {args.ClientSocket.RemoteEndPoint}");
+            Log($"We've established connection with {args.ClientSocket.RemoteEndPoint}");
         }
 
         private void ServerOnReceive(object sender, ReceiveEventArgs args)
@@ -94,7 +101,7 @@ namespace ChessServer
             }
             catch (Exception)
             {
-                Console.WriteLine("Error: invalid message format");
+                Log("Error: invalid message format");
                 return;
             }
 
@@ -105,7 +112,7 @@ namespace ChessServer
             }
             else
             {
-                Console.WriteLine("Error: unknown command");
+                Log("Error: unknown command");
             }
         }
 
