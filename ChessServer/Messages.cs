@@ -93,13 +93,14 @@ namespace ChessServer
         [JsonProperty(PropertyName = "status")]
         public InviteSendStatus Status { get; set; }
 
-        public InviteSendResponse(InviteSendStatus status)
+        public InviteSendResponse(Guid playerId, InviteSendStatus status)
         {
+            PlayerId = playerId;
             Status = status;
         }
     }
 
-    public enum InviteAnswerStatus
+    public enum InviteAnswer
     {
         Accept,
         Reject
@@ -111,8 +112,8 @@ namespace ChessServer
         [JsonProperty(PropertyName = "player_id")]
         public Guid PlayerId { get; set; }
 
-        [JsonProperty(PropertyName = "status")]
-        public InviteAnswerStatus Status { get; set; }
+        [JsonProperty(PropertyName = "answer")]
+        public InviteAnswer Answer { get; set; }
     }
 
     [MessageType("answer_invite")]
@@ -122,9 +123,9 @@ namespace ChessServer
         public Guid PlayerId { get; set; }
 
         [JsonProperty(PropertyName = "status")]
-        public InviteAnswerStatus Status { get; set; }
+        public InviteAnswer Status { get; set; }
 
-        public InviteAnswerResponse(Guid playerId, InviteAnswerStatus status)
+        public InviteAnswerResponse(Guid playerId, InviteAnswer status)
         {
             PlayerId = playerId;
             Status = status;

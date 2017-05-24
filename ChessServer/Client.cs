@@ -9,6 +9,7 @@ namespace ChessServer
         public Socket Socket { get; }
         public Guid Id { get; } = Guid.NewGuid();
         public string Nick { get; set; } = string.Empty;
+        public Game Game { get; set; }
 
         public Client(Socket socket)
         {

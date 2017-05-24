@@ -12,6 +12,7 @@ namespace ChessServer
         private readonly object _lock = new object();
         private readonly List<Client> _clients = new List<Client>();
         private readonly Dictionary<string, Action<Client, string>> _handlers;
+        private readonly List<Game> _games = new List<Game>();
 
         public ChessServer(Action<object> logger)
         {
@@ -126,6 +127,8 @@ namespace ChessServer
             client.Nick = nick;
             client.Status = ClientStatus.Joined;
             Send(client, new JoinResponse(JoinStatus.Success));
+
+            Log($"Client {client.Socket.RemoteEndPoint} joined to the server as {nick}");
         }
 
         private void HandleSendInvite(Client client, string data)
@@ -133,7 +136,7 @@ namespace ChessServer
             var clientId = JsonConvert.DeserializeObject<InviteSendRequest>(data).PlayerId;
             if (clientId == client.Id)
             {
-                Send(client, new InviteSendResponse(InviteSendStatus.SelfInvite));
+                Send(client, new InviteSendResponse(clientId, InviteSendStatus.SelfInvite));
                 return;
             }
 
@@ -145,36 +148,52 @@ namespace ChessServer
 
             if (invitedClient == null)
             {
-                Send(client, new InviteSendResponse(InviteSendStatus.PlayerNotExist));
+                Send(client, new InviteSendResponse(clientId, InviteSendStatus.PlayerNotExist));
                 return;
             }
 
-            Send(client, new InviteSendResponse(InviteSendStatus.Success));
+            Send(client, new InviteSendResponse(clientId, InviteSendStatus.Success));
             Send(invitedClient, new InviteSendRequest { PlayerId = client.Id });
+
+            Log($"{client.Nick} has invited {invitedClient.Nick} to the game");
         }
 
         private void HandleAnswerInvite(Client client, string data)
         {
-            var response = JsonConvert.DeserializeObject<InviteAnswerResponse>(data);
-            if (response.PlayerId == client.Id)
+            var request = JsonConvert.DeserializeObject<InviteAnswerRequest>(data);
+            if (request.PlayerId == client.Id)
             {
                 return;
             }
 
-            Client invitedClient;
+            Client invitingClient;
             lock (_lock)
             {
-                invitedClient = _clients.FirstOrDefault(c => c.Id == response.PlayerId);
+                invitingClient = _clients.FirstOrDefault(c => c.Id == request.PlayerId);
             }
 
-            if (invitedClient == null)
+            if (invitingClient == null)
             {
                 return;
             }
 
-            if (response.Status == InviteAnswerStatus.Accept)
+            if (request.Answer == InviteAnswer.Accept)
             {
-                // TODO: create game
+                var game = new Game(client, invitingClient);
+                client.Game = game;
+                client.Status = ClientStatus.OnGame;
+
+                invitingClient.Game = game;
+                invitingClient.Status = ClientStatus.OnGame;
+
+                _games.Add(game);
+
+                Log($"{client.Nick} has accepted {invitingClient.Nick}'s invitation");
+                Log($"Created game: {client.Nick} with {invitingClient.Nick}");
+            }
+            else
+            {
+                Log($"{client.Nick} has rejected {invitingClient.Nick}'s invitation");
             }
         }
 
