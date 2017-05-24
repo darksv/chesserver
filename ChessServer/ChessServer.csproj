@@ -49,6 +49,7 @@
     <Compile Include="Server.cs" />
   </ItemGroup>
   <ItemGroup>
+    <None Include="api.md" />
     <None Include="App.config" />
     <None Include="packages.config" />
   </ItemGroup>
