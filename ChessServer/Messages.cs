@@ -36,7 +36,7 @@ namespace ChessServer
         public ClientStatus Status { get; set; }
     }
 
-    [MessageType("online_players")]
+    [MessageType("players")]
     public class OnlinePlayers : Message
     {
         [JsonProperty(PropertyName = "players")]

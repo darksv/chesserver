@@ -41,10 +41,11 @@ namespace ChessServer
                 {"join", HandleJoin},
                 {"ping", HandlePing},
                 {"send_invite", HandleSendInvite},
-                {"answer_invite", HandleAnswerInvite}
+                {"answer_invite", HandleAnswerInvite},
+                {"get_players", HandleGetPlayers}
             };
         }
-
+        
         public void Run()
         {
             _server.Receive += ServerOnReceive;
@@ -133,24 +134,6 @@ namespace ChessServer
             client.Nick = nick;
             client.Status = ClientStatus.Joined;
             Send(client, new JoinResponse(JoinStatus.Success));
-
-            Client[] clients;
-            lock (_lock)
-            {
-                clients = _clients.Where(c => c != client && c.Status == ClientStatus.Joined).ToArray();
-            }
-
-            Send(client, new OnlinePlayers
-            {
-                Players = clients
-                    .Select(c => new PlayerItem
-                    {
-                        Id = c.Id,
-                        Nick = c.Nick,
-                        Status = c.Status
-                    })
-                    .ToArray()
-            });
         }
 
         private void HandleSendInvite(Client client, string data)
@@ -203,8 +186,29 @@ namespace ChessServer
             }
         }
 
+        private void HandleGetPlayers(Client client, string data)
+        {
+            Client[] clients;
+            lock (_lock)
+            {
+                clients = _clients.Where(c => c.Status == ClientStatus.Joined).ToArray();
+            }
+
+            Send(client, new OnlinePlayers
+            {
+                Players = clients
+                    .Select(c => new PlayerItem
+                    {
+                        Id = c.Id,
+                        Nick = c.Nick,
+                        Status = c.Status
+                    })
+                    .ToArray()
+            });
+        }
+
         #endregion
-        
+
         private void Send<T>(Client client, T message)
             where T : Message
         {
