@@ -86,8 +86,17 @@ namespace ChessServer
                 client = _clients.FirstOrDefault(p => p.Socket == args.ClientSocket);
             }
 
-            // TODO: handle illformed message
-            var message = JsonConvert.DeserializeObject<Message>(args.Message);
+            Message message;
+            try
+            {
+                message = JsonConvert.DeserializeObject<Message>(args.Message);
+            }
+            catch (Exception)
+            {
+                Console.WriteLine("Error: invalid message format");
+                return;
+            }
+
             var messageType = message?.Type ?? string.Empty;
             if (_handlers.TryGetValue(messageType, out var handler))
             {
