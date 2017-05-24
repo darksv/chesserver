@@ -8,9 +8,9 @@ namespace ChessServer
 {
     public class Server
     {
-        public void Start()
+        public void Start(ushort port)
         {
-            var localEndPoint = new IPEndPoint(IPAddress.Any, 11000);
+            var localEndPoint = new IPEndPoint(IPAddress.Any, port);
             var listener = new Socket(AddressFamily.InterNetwork, SocketType.Stream, ProtocolType.Tcp);
 
             try

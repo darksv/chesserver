@@ -27,12 +27,12 @@ namespace ChessServer
             };
         }
         
-        public void Run()
+        public void Run(ushort port)
         {
             _server.Receive += ServerOnReceive;
             _server.Connect += ServerOnConnect;
             _server.Disconnect += ServerOnDisconnect;
-            _server.Start();
+            _server.Start(port);
         }
 
         private void Log(object value)

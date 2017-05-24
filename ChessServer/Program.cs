@@ -11,10 +11,12 @@ namespace ChessServer
 
         public static int Main(string[] args)
         {
-            Log("Starting server...");
+            const ushort port = 11000;
+
+            Log($"Starting server :{port}...");
 
             var server = new ChessServer(Log);
-            server.Run();
+            server.Run(port);
 
             Console.WriteLine("\nPress ENTER to continue...");
             Console.Read();
