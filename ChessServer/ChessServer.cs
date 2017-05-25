@@ -20,13 +20,16 @@ namespace ChessServer
             _handlers = new Dictionary<string, Action<Client, string>>
             {
                 {"join", HandleJoin},
+                {"leave", HandleLeave},
                 {"ping", HandlePing},
                 {"send_invite", HandleSendInvite},
                 {"answer_invite", HandleAnswerInvite},
-                {"get_players", HandleGetPlayers}
+                {"get_players", HandleGetPlayers},
+                {"move", HandleMove},
+                {"ready", HandleReady}
             };
         }
-        
+
         public void Run(ushort port)
         {
             _server.Receive += ServerOnReceive;
@@ -131,6 +134,11 @@ namespace ChessServer
             Log($"Client {client.Socket.RemoteEndPoint} joined to the server as {nick}");
         }
 
+        private void HandleLeave(Client client, string args)
+        {
+            Log($"{client.Nick} has left the game");
+        }
+
         private void HandleSendInvite(Client client, string data)
         {
             var clientId = JsonConvert.DeserializeObject<InviteSendRequest>(data).PlayerId;
@@ -214,6 +222,26 @@ namespace ChessServer
             }
 
             Send(client, new OnlinePlayers {Players = players});
+        }
+
+        private void HandleMove(Client client, string data)
+        {
+            if (client.Status != ClientStatus.OnGame)
+            {
+                return;
+            }
+
+            Log($"Got move from {client.Nick}!");
+        }
+
+        private void HandleReady(Client client, string data)
+        {
+            if (client.Status != ClientStatus.OnGame)
+            {
+                return;
+            }
+
+            Log($"Player {client.Nick} finished his move!");
         }
 
         #endregion
