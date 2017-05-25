@@ -45,6 +45,7 @@
     <Compile Include="ConnectionEventArgs.cs" />
     <Compile Include="ConnectionState.cs" />
     <Compile Include="Game.cs" />
+    <Compile Include="Invitation.cs" />
     <Compile Include="Messages.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />

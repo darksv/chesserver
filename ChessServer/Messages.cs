@@ -75,6 +75,7 @@ namespace ChessServer
         Success,
         SelfInvite,
         PlayerNotExist,
+        AlreadyInvited
     }
 
     [MessageType("send_invite")]
@@ -116,6 +117,13 @@ namespace ChessServer
         public InviteAnswer Answer { get; set; }
     }
 
+    public enum InviteAnswerStatus
+    {
+        Success,
+        InvalidPlayer,
+        NotInvited,
+    }
+
     [MessageType("answer_invite")]
     public class InviteAnswerResponse : Message
     {
@@ -123,9 +131,9 @@ namespace ChessServer
         public Guid PlayerId { get; set; }
 
         [JsonProperty(PropertyName = "status")]
-        public InviteAnswer Status { get; set; }
+        public InviteAnswerStatus Status { get; set; }
 
-        public InviteAnswerResponse(Guid playerId, InviteAnswer status)
+        public InviteAnswerResponse(Guid playerId, InviteAnswerStatus status)
         {
             PlayerId = playerId;
             Status = status;

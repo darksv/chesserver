@@ -13,6 +13,7 @@ namespace ChessServer
         private readonly List<Client> _clients = new List<Client>();
         private readonly Dictionary<string, Action<Client, string>> _handlers;
         private readonly List<Game> _games = new List<Game>();
+        private readonly List<Invitation> _invitations = new List<Invitation>();
 
         public ChessServer(Action<object> logger)
         {
@@ -160,6 +161,18 @@ namespace ChessServer
                 return;
             }
 
+            if (_invitations.Any(i => i.InvitedPlayer == invitedClient && i.InvitingPlayer == client && !i.Answer.HasValue))
+            {
+                Send(client, new InviteSendResponse(clientId, InviteSendStatus.AlreadyInvited));
+                return;
+            }
+
+            _invitations.Add(new Invitation
+            {
+                InvitingPlayer = client,
+                InvitedPlayer = invitedClient,
+            });
+
             Send(client, new InviteSendResponse(clientId, InviteSendStatus.Success));
             Send(invitedClient, new InviteSendRequest { PlayerId = client.Id });
 
@@ -171,6 +184,7 @@ namespace ChessServer
             var request = JsonConvert.DeserializeObject<InviteAnswerRequest>(data);
             if (request.PlayerId == client.Id)
             {
+                Send(client, new InviteAnswerResponse(request.PlayerId, InviteAnswerStatus.InvalidPlayer));
                 return;
             }
 
@@ -182,6 +196,14 @@ namespace ChessServer
 
             if (invitingClient == null)
             {
+                Send(client, new InviteAnswerResponse(request.PlayerId, InviteAnswerStatus.InvalidPlayer));
+                return;
+            }
+
+            if (!_invitations.Any(i => i.InvitedPlayer == client && i.InvitingPlayer == invitingClient &&
+                                       !i.Answer.HasValue))
+            {
+                Send(client, new InviteAnswerResponse(request.PlayerId, InviteAnswerStatus.NotInvited));
                 return;
             }
 
@@ -203,6 +225,8 @@ namespace ChessServer
             {
                 Log($"{client.Nick} has rejected {invitingClient.Nick}'s invitation");
             }
+
+            Send(client, new InviteAnswerResponse(request.PlayerId, InviteAnswerStatus.Success));
         }
 
         private void HandleGetPlayers(Client client, string data)
