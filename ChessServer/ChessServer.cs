@@ -245,7 +245,7 @@ namespace ChessServer
                     .ToArray();
             }
 
-            Send(client, new GetPlayersResponse(players);
+            Send(client, new GetPlayersResponse(players));
         }
 
         private void HandleMove(Client client, string data)
