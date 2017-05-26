@@ -40,31 +40,31 @@ namespace ChessServer
             var connectionState = (ConnectionState)ar.AsyncState;
             var clientSocket = connectionState.Socket;
 
-            int bytesRead = clientSocket.EndReceive(ar);
-            if (bytesRead <= 0)
-            {
-                return;
-            }
-
-            var sb = connectionState.StringBuilder;
-            sb.Append(Encoding.ASCII.GetString(connectionState.Buffer, 0, bytesRead));
-
-            var parts = sb.ToString().Split('\n');
-
-            sb.Clear();
-            sb.Append(parts.Last());
-
-            foreach (var part in parts.Take(parts.Length - 1))
-            {
-                Receive?.Invoke(this, new ReceiveEventArgs
-                {
-                    ClientSocket = connectionState.Socket,
-                    Message = part
-                });
-            }
-
             try
             {
+                int bytesRead = clientSocket.EndReceive(ar);
+                if (bytesRead <= 0)
+                {
+                    return;
+                }
+
+                var sb = connectionState.StringBuilder;
+                sb.Append(Encoding.ASCII.GetString(connectionState.Buffer, 0, bytesRead));
+
+                var parts = sb.ToString().Split('\n');
+
+                sb.Clear();
+                sb.Append(parts.Last());
+
+                foreach (var part in parts.Take(parts.Length - 1))
+                {
+                    Receive?.Invoke(this, new ReceiveEventArgs
+                    {
+                        ClientSocket = connectionState.Socket,
+                        Message = part
+                    });
+                }
+
                 clientSocket.BeginReceive(connectionState.Buffer, 0, ConnectionState.BufferSize, 0, ReadCallback, connectionState);
             }
             catch (Exception e)
