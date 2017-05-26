@@ -55,7 +55,7 @@ namespace ChessServer
                 }
             }
 
-            Log($"We've lost connection with {args.ClientSocket.RemoteEndPoint}");
+            Log($"We've lost connection with {args.ClientSocket.RemoteEndPoint} (Reason: {args.DisconnectionReason})");
         }
 
         private void ServerOnConnect(object sender, ConnectionEventArgs args)

@@ -13,6 +13,7 @@ namespace ChessServer
             var localEndPoint = new IPEndPoint(IPAddress.Any, port);
             var listener = new Socket(AddressFamily.InterNetwork, SocketType.Stream, ProtocolType.Tcp);
 
+            Socket clientSocket = null;
             try
             {
                 listener.Bind(localEndPoint);
@@ -20,7 +21,7 @@ namespace ChessServer
 
                 while (true)
                 {
-                    var clientSocket = listener.Accept();
+                    clientSocket = listener.Accept();
 
                     Connect?.Invoke(this, new ConnectionEventArgs(clientSocket));
 
@@ -30,7 +31,7 @@ namespace ChessServer
             }
             catch (Exception e)
             {
-                Console.WriteLine($"{e.GetType().FullName}: {e.Message}");
+                HandleError(clientSocket, e);
             }
         }
 
@@ -62,37 +63,53 @@ namespace ChessServer
                 });
             }
 
-            clientSocket.BeginReceive(connectionState.Buffer, 0, ConnectionState.BufferSize, 0, ReadCallback, connectionState);
+            try
+            {
+                clientSocket.BeginReceive(connectionState.Buffer, 0, ConnectionState.BufferSize, 0, ReadCallback, connectionState);
+            }
+            catch (Exception e)
+            {
+                HandleError(clientSocket, e);
+            }
         }
 
-        public void Send(Socket handler, string data)
+        public void Send(Socket clientSocket, string data)
         {
             try
             {
                 byte[] byteData = Encoding.ASCII.GetBytes(data);
 
-                handler.BeginSend(byteData, 0, byteData.Length, 0,
-                    SendCallback, handler);
-            }
-            catch (SocketException e)
-            {
-                Disconnect?.Invoke(this, new ConnectionEventArgs(handler));
-
-                Console.WriteLine($"{e.GetType().FullName}: {e.Message}");
-            }
-        }
-
-        private void SendCallback(IAsyncResult ar)
-        {
-            try
-            {
-                var clientSocket = (Socket) ar.AsyncState;
-                clientSocket.EndSend(ar);
+                clientSocket.BeginSend(byteData, 0, byteData.Length, 0,
+                    SendCallback, clientSocket);
             }
             catch (Exception e)
             {
-                Console.WriteLine($"{e.GetType().FullName}: {e.Message}");
+                HandleError(clientSocket, e);
             }
+        }
+
+        private void SendCallback(IAsyncResult result)
+        {
+            var clientSocket = (Socket)result.AsyncState;
+            try
+            {
+                clientSocket.EndSend(result);
+            }
+            catch (Exception e)
+            {
+                HandleError(clientSocket, e);
+            }
+        }
+
+        private void HandleError(Socket clientSocket, Exception e = null)
+        {
+            if (clientSocket == null)
+            {
+                return;
+            }
+
+            var disconnectionReason = e?.Message ?? string.Empty;
+            Disconnect?.Invoke(this, new ConnectionEventArgs(clientSocket, disconnectionReason));
         }
 
         public event EventHandler<ReceiveEventArgs> Receive;
