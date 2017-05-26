@@ -3,6 +3,8 @@ using Newtonsoft.Json;
 
 namespace ChessServer
 {
+    #region Common Types
+
     public class Message
     {
         [JsonProperty(PropertyName = "type")]
@@ -19,29 +21,9 @@ namespace ChessServer
         }
     }
 
-    [MessageType("pong")]
-    public class PongResponse : Message
-    {
-    }
+    #endregion
 
-    public class PlayerItem
-    {
-        [JsonProperty(PropertyName = "id")]
-        public Guid Id { get; set; }
-
-        [JsonProperty(PropertyName = "nick")]
-        public string Nick { get; set; }
-
-        [JsonProperty(PropertyName = "status")]
-        public ClientStatus Status { get; set; }
-    }
-
-    [MessageType("players")]
-    public class OnlinePlayers : Message
-    {
-        [JsonProperty(PropertyName = "players")]
-        public PlayerItem[] Players { get; set; }
-    }
+    #region Join Command
 
     [MessageType("join")]
     public class JoinRequest : Message
@@ -70,7 +52,18 @@ namespace ChessServer
         }
     }
 
-    public enum InviteSendStatus
+    #endregion
+
+    #region SendInvite Command
+
+    [MessageType("send_invite")]
+    public class SendInviteRequest : Message
+    {
+        [JsonProperty(PropertyName = "player_id")]
+        public Guid PlayerId { get; set; }
+    }
+
+    public enum SendInviteStatus
     {
         Success,
         SelfInvite,
@@ -79,39 +72,24 @@ namespace ChessServer
     }
 
     [MessageType("send_invite")]
-    public class InviteSendRequest : Message
-    {
-        [JsonProperty(PropertyName = "player_id")]
-        public Guid PlayerId { get; set; }
-    }
-
-    [MessageType("send_invite")]
-    public class InviteSendResponse : Message
+    public class SendInviteResponse : Message
     {
         [JsonProperty(PropertyName = "player_id")]
         public Guid PlayerId { get; set; }
 
         [JsonProperty(PropertyName = "status")]
-        public InviteSendStatus Status { get; set; }
+        public SendInviteStatus Status { get; set; }
 
-        public InviteSendResponse(Guid playerId, InviteSendStatus status)
+        public SendInviteResponse(Guid playerId, SendInviteStatus status)
         {
             PlayerId = playerId;
             Status = status;
         }
     }
 
-    [MessageType("invite")]
-    public class InviteMessage : Message
-    {
-        [JsonProperty(PropertyName = "player_id")]
-        public Guid PlayerId { get; set; }
+    #endregion
 
-        public InviteMessage(Guid playerId)
-        {
-            PlayerId = playerId;
-        }
-    }
+    #region AnswerInvite Command
 
     public enum InviteAnswer
     {
@@ -120,7 +98,7 @@ namespace ChessServer
     }
 
     [MessageType("answer_invite")]
-    public class InviteAnswerRequest : Message
+    public class AnswerInviteRequest : Message
     {
         [JsonProperty(PropertyName = "player_id")]
         public Guid PlayerId { get; set; }
@@ -129,7 +107,7 @@ namespace ChessServer
         public InviteAnswer Answer { get; set; }
     }
 
-    public enum InviteAnswerStatus
+    public enum AnswerInviteStatus
     {
         Success,
         InvalidPlayer,
@@ -137,18 +115,73 @@ namespace ChessServer
     }
 
     [MessageType("answer_invite")]
-    public class InviteAnswerResponse : Message
+    public class AnswerInviteResponse : Message
     {
         [JsonProperty(PropertyName = "player_id")]
         public Guid PlayerId { get; set; }
 
         [JsonProperty(PropertyName = "status")]
-        public InviteAnswerStatus Status { get; set; }
+        public AnswerInviteStatus Status { get; set; }
 
-        public InviteAnswerResponse(Guid playerId, InviteAnswerStatus status)
+        public AnswerInviteResponse(Guid playerId, AnswerInviteStatus status)
         {
             PlayerId = playerId;
             Status = status;
         }
     }
+
+    #endregion
+
+    #region Invite Notification
+
+    [MessageType("invite")]
+    public class InviteNotification : Message
+    {
+        [JsonProperty(PropertyName = "player_id")]
+        public Guid PlayerId { get; set; }
+
+        public InviteNotification(Guid playerId)
+        {
+            PlayerId = playerId;
+        }
+    }
+
+    #endregion
+
+    #region GetPlayers Command
+
+    public class PlayerItem
+    {
+        [JsonProperty(PropertyName = "id")]
+        public Guid Id { get; set; }
+
+        [JsonProperty(PropertyName = "nick")]
+        public string Nick { get; set; }
+
+        [JsonProperty(PropertyName = "status")]
+        public ClientStatus Status { get; set; }
+    }
+
+    [MessageType("players")]
+    public class GetPlayersResponse : Message
+    {
+        [JsonProperty(PropertyName = "players")]
+        public PlayerItem[] Players { get; set; }
+
+        public GetPlayersResponse(PlayerItem[] players)
+        {
+            Players = players;
+        }
+    }
+
+    #endregion
+
+    #region Other
+
+    [MessageType("pong")]
+    public class PongResponse : Message
+    {
+    }
+
+    #endregion
 }

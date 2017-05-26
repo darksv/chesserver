@@ -142,10 +142,10 @@ namespace ChessServer
 
         private void HandleSendInvite(Client client, string data)
         {
-            var clientId = JsonConvert.DeserializeObject<InviteSendRequest>(data).PlayerId;
+            var clientId = JsonConvert.DeserializeObject<SendInviteRequest>(data).PlayerId;
             if (clientId == client.Id)
             {
-                Send(client, new InviteSendResponse(clientId, InviteSendStatus.SelfInvite));
+                Send(client, new SendInviteResponse(clientId, SendInviteStatus.SelfInvite));
                 return;
             }
 
@@ -157,13 +157,13 @@ namespace ChessServer
 
             if (invitedClient == null)
             {
-                Send(client, new InviteSendResponse(clientId, InviteSendStatus.PlayerNotExist));
+                Send(client, new SendInviteResponse(clientId, SendInviteStatus.PlayerNotExist));
                 return;
             }
 
             if (_invitations.Any(i => i.InvitedPlayer == invitedClient && i.InvitingPlayer == client && !i.Answer.HasValue))
             {
-                Send(client, new InviteSendResponse(clientId, InviteSendStatus.AlreadyInvited));
+                Send(client, new SendInviteResponse(clientId, SendInviteStatus.AlreadyInvited));
                 return;
             }
 
@@ -173,18 +173,18 @@ namespace ChessServer
                 InvitedPlayer = invitedClient,
             });
 
-            Send(client, new InviteSendResponse(clientId, InviteSendStatus.Success));
-            Send(invitedClient, new InviteMessage(client.Id));
+            Send(client, new SendInviteResponse(clientId, SendInviteStatus.Success));
+            Send(invitedClient, new InviteNotification(client.Id));
 
             Log($"{client.Nick} has invited {invitedClient.Nick} to the game");
         }
 
         private void HandleAnswerInvite(Client client, string data)
         {
-            var request = JsonConvert.DeserializeObject<InviteAnswerRequest>(data);
+            var request = JsonConvert.DeserializeObject<AnswerInviteRequest>(data);
             if (request.PlayerId == client.Id)
             {
-                Send(client, new InviteAnswerResponse(request.PlayerId, InviteAnswerStatus.InvalidPlayer));
+                Send(client, new AnswerInviteResponse(request.PlayerId, AnswerInviteStatus.InvalidPlayer));
                 return;
             }
 
@@ -196,14 +196,14 @@ namespace ChessServer
 
             if (invitingClient == null)
             {
-                Send(client, new InviteAnswerResponse(request.PlayerId, InviteAnswerStatus.InvalidPlayer));
+                Send(client, new AnswerInviteResponse(request.PlayerId, AnswerInviteStatus.InvalidPlayer));
                 return;
             }
 
             if (!_invitations.Any(i => i.InvitedPlayer == client && i.InvitingPlayer == invitingClient &&
                                        !i.Answer.HasValue))
             {
-                Send(client, new InviteAnswerResponse(request.PlayerId, InviteAnswerStatus.NotInvited));
+                Send(client, new AnswerInviteResponse(request.PlayerId, AnswerInviteStatus.NotInvited));
                 return;
             }
 
@@ -226,7 +226,7 @@ namespace ChessServer
                 Log($"{client.Nick} has rejected {invitingClient.Nick}'s invitation");
             }
 
-            Send(client, new InviteAnswerResponse(request.PlayerId, InviteAnswerStatus.Success));
+            Send(client, new AnswerInviteResponse(request.PlayerId, AnswerInviteStatus.Success));
         }
 
         private void HandleGetPlayers(Client client, string data)
@@ -245,7 +245,7 @@ namespace ChessServer
                     .ToArray();
             }
 
-            Send(client, new OnlinePlayers {Players = players});
+            Send(client, new GetPlayersResponse(players);
         }
 
         private void HandleMove(Client client, string data)
