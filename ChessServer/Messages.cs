@@ -148,6 +148,56 @@ namespace ChessServer
 
     #endregion
 
+    #region Move Command
+
+    [MessageType("move")]
+    public class MoveRequest : Message
+    {
+        [JsonProperty(PropertyName = "move")]
+        public string Move { get; set; }
+    }
+
+    public enum MoveStatus
+    {
+        Success,
+        NotOnGame,
+        InvalidMove
+    }
+
+    [MessageType("move")]
+    public class MoveResponse : Message
+    {
+        [JsonProperty(PropertyName = "status")]
+        public MoveStatus Status { get; set; }
+
+        public MoveResponse(MoveStatus status)
+        {
+            Status = status;
+        }
+    }
+
+    #endregion
+
+    #region Move Notification
+
+    [MessageType("move_done")]
+    public class MoveNotification : Message
+    {
+        [JsonProperty(PropertyName = "player_id")]
+        public Guid PlayerId { get; set; }
+
+        [JsonProperty(PropertyName = "move")]
+        public string Move { get; set; }
+
+        public MoveNotification(Guid playerId, string move)
+        {
+            PlayerId = playerId;
+            Move = move;
+        }
+    }
+
+    #endregion
+
     #region GetPlayers Command
 
     public class PlayerItem

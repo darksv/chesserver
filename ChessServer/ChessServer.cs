@@ -250,12 +250,26 @@ namespace ChessServer
 
         private void HandleMove(Client client, string data)
         {
+            var request = JsonConvert.DeserializeObject<MoveRequest>(data);
+
             if (client.Status != ClientStatus.OnGame)
             {
                 return;
             }
 
-            Log($"Got move from {client.Nick}!");
+            var game = _games
+                .FirstOrDefault(g => g.InvolvesPlayer(client));
+
+            if (game == null)
+            {
+                Send(client, new MoveResponse(MoveStatus.NotOnGame));
+                return;
+            }
+
+            // TODO: check move
+
+            Send(client, new MoveResponse(MoveStatus.Success));
+            Send(game.GetOpponentFor(client), new MoveNotification(client.Id, request.Move));
         }
 
         private void HandleReady(Client client, string data)

@@ -108,6 +108,8 @@ namespace ChessServer
                 return;
             }
 
+            clientSocket.Shutdown(SocketShutdown.Both);
+
             var disconnectionReason = e?.Message ?? string.Empty;
             Disconnect?.Invoke(this, new ConnectionEventArgs(clientSocket, disconnectionReason));
         }
