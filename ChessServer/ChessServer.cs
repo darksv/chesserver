@@ -266,6 +266,12 @@ namespace ChessServer
                 return;
             }
 
+            if (!game.CanDoMove(client))
+            {
+                Send(client, new MoveResponse(MoveStatus.InvalidMove));
+                return;
+            }
+
             // TODO: check move
 
             Send(client, new MoveResponse(MoveStatus.Success));

@@ -29,5 +29,11 @@
                 ? BlackPlayer 
                 : (BlackPlayer == player ? WhitePlayer : null);
         }
+
+        public bool CanDoMove(Client player)
+        {
+            return WhitePlayer == player && CurrentTurn == Color.White
+                || BlackPlayer == player && CurrentTurn == Color.Black;
+        }
     }
 }
