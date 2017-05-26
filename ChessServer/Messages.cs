@@ -101,6 +101,18 @@ namespace ChessServer
         }
     }
 
+    [MessageType("invite")]
+    public class InviteMessage : Message
+    {
+        [JsonProperty(PropertyName = "player_id")]
+        public Guid PlayerId { get; set; }
+
+        public InviteMessage(Guid playerId)
+        {
+            PlayerId = playerId;
+        }
+    }
+
     public enum InviteAnswer
     {
         Accept,

@@ -174,7 +174,7 @@ namespace ChessServer
             });
 
             Send(client, new InviteSendResponse(clientId, InviteSendStatus.Success));
-            Send(invitedClient, new InviteSendRequest { PlayerId = client.Id });
+            Send(invitedClient, new InviteMessage(client.Id));
 
             Log($"{client.Nick} has invited {invitedClient.Nick} to the game");
         }
