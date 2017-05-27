@@ -46,7 +46,7 @@ API
     - 2 - InvalidMove
 
 ### Move from opponent notification
-   -[S] `{"type":"move_done","player_id":"GUID","move":"???"}`
+   - [S] `{"type":"move_done","player_id":"GUID","move":"???"}`
 
 ### Player change (status changed or new player joined)
   - [S] `{"type":"player","player":{"nick":"Player1","id":"GUID","status":1}}`
