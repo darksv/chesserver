@@ -5,6 +5,7 @@
         Connected,
         Joined,
         OnGame,
+        Left,
         Disconnected
     }
 }

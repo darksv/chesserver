@@ -66,6 +66,8 @@ namespace ChessServer
                 _clients.Add(client);
             }
 
+            NotifyClientChange(client);
+
             Log($"We've established connection with {args.ClientSocket.RemoteEndPoint}");
         }
 
@@ -131,12 +133,16 @@ namespace ChessServer
             client.Nick = nick;
             client.Status = ClientStatus.Joined;
             Send(client, new JoinResponse(JoinStatus.Success));
+            NotifyClientChange(client);
 
             Log($"Client {client.Socket.RemoteEndPoint} joined to the server as {nick}");
         }
 
         private void HandleLeave(Client client, string args)
         {
+            client.Status = ClientStatus.Left;
+            NotifyClientChange(client);
+
             Log($"{client.Nick} has left the game");
         }
 
@@ -212,9 +218,11 @@ namespace ChessServer
                 var game = new Game(client, invitingClient);
                 client.Game = game;
                 client.Status = ClientStatus.OnGame;
+                NotifyClientChange(client);
 
                 invitingClient.Game = game;
                 invitingClient.Status = ClientStatus.OnGame;
+                NotifyClientChange(invitingClient);
 
                 _games.Add(game);
 
@@ -317,6 +325,30 @@ namespace ChessServer
             lock (_lock)
             {
                 return _clients.Any(p => p.Nick == nick);
+            }
+        }
+
+        private void NotifyClientChange(Client client)
+        {
+            var notification = new PlayerNotification(new PlayerItem
+            {
+                Id = client.Id,
+                Nick = client.Nick,
+                Status = client.Status
+            });
+
+            Client[] clientsToNotify;
+            lock (_lock)
+            {
+                clientsToNotify = _clients
+                    .Where(c => c.Status == ClientStatus.Joined || c.Status == ClientStatus.OnGame)
+                    .Where(c => c != client)
+                    .ToArray();
+            }
+
+            foreach (var otherClient in clientsToNotify)
+            {
+                Send(otherClient, notification);
             }
         }
     }
