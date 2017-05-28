@@ -1,8 +1,8 @@
 ﻿using System;
 
-namespace ChessServer
+namespace Chess.Server
 {
-    public class ChessServerApp
+    public static class ChessServerApp
     {
         private static void Log(object value)
         {

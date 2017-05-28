@@ -7,7 +7,7 @@
     <ProjectGuid>{367CFC30-2FB6-432E-879F-70DF87AD05C0}</ProjectGuid>
     <OutputType>Library</OutputType>
     <AppDesignerFolder>Properties</AppDesignerFolder>
-    <RootNamespace>ChessCommon</RootNamespace>
+    <RootNamespace>Chess.Common</RootNamespace>
     <AssemblyName>Chess.Common</AssemblyName>
     <TargetFrameworkVersion>v4.6.1</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
@@ -40,7 +40,7 @@
     <Compile Include="Messages\AnswerInviteRequest.cs" />
     <Compile Include="Messages\AnswerInviteResponse.cs" />
     <Compile Include="Messages\AnswerInviteStatus.cs" />
-    <Compile Include="ClientStatus.cs" />
+    <Compile Include="PlayerStatus.cs" />
     <Compile Include="Messages\EndTurnRequest.cs" />
     <Compile Include="Messages\EndTurnResponse.cs" />
     <Compile Include="Messages\EndTurnStatus.cs" />
@@ -57,7 +57,7 @@
     <Compile Include="Messages\MoveRequest.cs" />
     <Compile Include="Messages\MoveResponse.cs" />
     <Compile Include="Messages\MoveStatus.cs" />
-    <Compile Include="Messages\PlayerItem.cs" />
+    <Compile Include="Messages\Player.cs" />
     <Compile Include="Messages\PlayerNotification.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Messages\SendInviteRequest.cs" />

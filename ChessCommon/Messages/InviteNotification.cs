@@ -1,7 +1,7 @@
 ﻿using System;
 using Newtonsoft.Json;
 
-namespace ChessServer
+namespace Chess.Common.Messages
 {
     [MessageType("invite")]
     public class InviteNotification : Message

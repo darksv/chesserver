@@ -1,4 +1,4 @@
-namespace ChessServer
+namespace Chess.Common.Messages
 {
     public enum JoinStatus
     {

@@ -1,7 +1,7 @@
 ﻿using System;
 using Newtonsoft.Json;
 
-namespace ChessServer
+namespace Chess.Common.Messages
 {
     [MessageType("end_turn")]
     public class EndTurnResponse : Message

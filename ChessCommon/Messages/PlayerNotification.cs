@@ -1,14 +1,14 @@
 using Newtonsoft.Json;
 
-namespace ChessServer
+namespace Chess.Common.Messages
 {
     [MessageType("player")]
     public class PlayerNotification : Message
     {
         [JsonProperty(PropertyName = "player")]
-        public PlayerItem Player { get; set; }
+        public Player Player { get; set; }
 
-        public PlayerNotification(PlayerItem player)
+        public PlayerNotification(Player player)
         {
             Player = player;
         }

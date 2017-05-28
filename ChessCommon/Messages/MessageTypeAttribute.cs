@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace ChessServer
+namespace Chess.Common.Messages
 {
     public class MessageTypeAttribute : Attribute
     {

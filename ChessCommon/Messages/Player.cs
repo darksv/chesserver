@@ -1,9 +1,9 @@
 using System;
 using Newtonsoft.Json;
 
-namespace ChessServer
+namespace Chess.Common.Messages
 {
-    public class PlayerItem
+    public class Player
     {
         [JsonProperty(PropertyName = "id")]
         public Guid Id { get; set; }
@@ -12,6 +12,6 @@ namespace ChessServer
         public string Nick { get; set; }
 
         [JsonProperty(PropertyName = "status")]
-        public ClientStatus Status { get; set; }
+        public PlayerStatus Status { get; set; }
     }
 }

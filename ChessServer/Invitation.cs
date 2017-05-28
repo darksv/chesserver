@@ -1,4 +1,6 @@
-﻿namespace ChessServer
+﻿using Chess.Common.Messages;
+
+namespace Chess.Server
 {
     public class Invitation
     {

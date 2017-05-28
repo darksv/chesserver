@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Net.Sockets;
 
-namespace ChessServer
+namespace Chess.Server
 {
     public class ReceiveEventArgs : EventArgs
     {

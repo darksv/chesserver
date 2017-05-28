@@ -1,6 +1,6 @@
 ﻿using Newtonsoft.Json;
 
-namespace ChessServer
+namespace Chess.Common.Messages
 {
     public class Message
     {

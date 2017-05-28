@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace ChessServer
+namespace Chess.Server
 {
     public enum Color
     {

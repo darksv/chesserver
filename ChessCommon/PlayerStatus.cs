@@ -1,6 +1,6 @@
-﻿namespace ChessServer
+﻿namespace Chess.Common
 {
-    public enum ClientStatus
+    public enum PlayerStatus
     {
         Connected,
         Joined,

@@ -1,9 +1,11 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using Chess.Common;
+using Chess.Common.Messages;
 using Newtonsoft.Json;
 
-namespace ChessServer
+namespace Chess.Server
 {
     public class ChessServer
     {
@@ -22,7 +24,6 @@ namespace ChessServer
             {
                 {"join", HandleJoin},
                 {"leave", HandleLeave},
-                {"ping", HandlePing},
                 {"send_invite", HandleSendInvite},
                 {"answer_invite", HandleAnswerInvite},
                 {"get_players", HandleGetPlayers},
@@ -51,7 +52,7 @@ namespace ChessServer
                 var client = _clients.FirstOrDefault(p => p.Socket == args.ClientSocket);
                 if (client != null)
                 {
-                    client.Status = ClientStatus.Disconnected;
+                    client.Status = PlayerStatus.Disconnected;
                 }
             }
 
@@ -102,15 +103,10 @@ namespace ChessServer
         }
 
         #region Message Handlers
-
-        private void HandlePing(Client client, string data)
-        {
-            Send(client, new PongResponse());
-        }
-
+        
         private void HandleJoin(Client client, string data)
         {
-            if (client.Status != ClientStatus.Connected)
+            if (client.Status != PlayerStatus.Connected)
             {
                 Send(client, new JoinResponse(JoinStatus.AlreadyJoined));
                 return;
@@ -131,7 +127,7 @@ namespace ChessServer
             }
 
             client.Nick = nick;
-            client.Status = ClientStatus.Joined;
+            client.Status = PlayerStatus.Joined;
             Send(client, new JoinResponse(JoinStatus.Success));
             NotifyClientChange(client);
 
@@ -140,7 +136,7 @@ namespace ChessServer
 
         private void HandleLeave(Client client, string args)
         {
-            client.Status = ClientStatus.Left;
+            client.Status = PlayerStatus.Left;
             NotifyClientChange(client);
 
             Log($"{client.Nick} has left the game");
@@ -217,11 +213,11 @@ namespace ChessServer
             {
                 var game = new Game(client, invitingClient);
                 client.Game = game;
-                client.Status = ClientStatus.OnGame;
+                client.Status = PlayerStatus.OnGame;
                 NotifyClientChange(client);
 
                 invitingClient.Game = game;
-                invitingClient.Status = ClientStatus.OnGame;
+                invitingClient.Status = PlayerStatus.OnGame;
                 NotifyClientChange(invitingClient);
 
                 _games.Add(game);
@@ -240,12 +236,12 @@ namespace ChessServer
 
         private void HandleGetPlayers(Client client, string data)
         {
-            PlayerItem[] players;
+            Player[] players;
             lock (_lock)
             {
                 players = _clients
-                    .Where(c => c.Status == ClientStatus.Joined)
-                    .Select(c => new PlayerItem
+                    .Where(c => c.Status == PlayerStatus.Joined)
+                    .Select(c => new Player
                     {
                         Id = c.Id,
                         Nick = c.Nick,
@@ -329,13 +325,13 @@ namespace ChessServer
         {
             lock (_lock)
             {
-                return _clients.Any(p => p.Status != ClientStatus.Left && p.Status != ClientStatus.Disconnected && p.Nick == nick);
+                return _clients.Any(p => p.Status != PlayerStatus.Left && p.Status != PlayerStatus.Disconnected && p.Nick == nick);
             }
         }
 
         private void NotifyClientChange(Client client)
         {
-            var notification = new PlayerNotification(new PlayerItem
+            var notification = new PlayerNotification(new Player
             {
                 Id = client.Id,
                 Nick = client.Nick,
@@ -346,7 +342,7 @@ namespace ChessServer
             lock (_lock)
             {
                 clientsToNotify = _clients
-                    .Where(c => c.Status == ClientStatus.Joined || c.Status == ClientStatus.OnGame)
+                    .Where(c => c.Status == PlayerStatus.Joined || c.Status == PlayerStatus.OnGame)
                     .Where(c => c != client)
                     .ToArray();
             }
