@@ -293,6 +293,22 @@ namespace ChessServer
                 return;
             }
 
+            var game = _games
+                .FirstOrDefault(g => g.InvolvesPlayer(client));
+
+            if (game == null)
+            {
+                // TODO: finish HIM!
+                return;
+            }
+
+            if (!game.CanDoMove(client))
+            {
+                // TODO: finish!
+                return;
+            }
+
+            game.SwitchTurn();
             Log($"Player {client.Nick} finished his move!");
         }
 

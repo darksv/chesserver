@@ -35,5 +35,10 @@
             return WhitePlayer == player && CurrentTurn == Color.White
                 || BlackPlayer == player && CurrentTurn == Color.Black;
         }
+
+        public void SwitchTurn()
+        {
+            CurrentTurn = CurrentTurn == Color.Black ? Color.White : Color.Black;
+        }
     }
 }
