@@ -140,6 +140,7 @@ namespace ChessServer
 
         private void HandleLeave(Client client, string args)
         {
+            client.Nick = string.Empty;
             client.Status = ClientStatus.Left;
             NotifyClientChange(client);
 
