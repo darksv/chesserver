@@ -52,7 +52,6 @@
     <Compile Include="Messages\JoinResponse.cs" />
     <Compile Include="Messages\JoinStatus.cs" />
     <Compile Include="Messages\Message.cs" />
-    <Compile Include="Messages\MessageTypeAttribute.cs" />
     <Compile Include="Messages\MoveNotification.cs" />
     <Compile Include="Messages\MoveRequest.cs" />
     <Compile Include="Messages\MoveResponse.cs" />

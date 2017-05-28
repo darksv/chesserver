@@ -6,5 +6,10 @@ namespace Chess.Common.Messages
     {
         [JsonProperty(PropertyName = "type")]
         public string Type { get; set; }
+
+        public Message(string type)
+        {
+            Type = type;
+        }
     }
 }

@@ -302,7 +302,7 @@ namespace Chess.Server
         private void Send<T>(Client client, T message)
             where T : Message
         {
-            _server.Send(client.Socket, MessageUtils.MakeMessage(message));
+            _server.Send(client.Socket, JsonConvert.SerializeObject(message) + "\n");
         }
 
         private bool IsNickTaken(string nick)

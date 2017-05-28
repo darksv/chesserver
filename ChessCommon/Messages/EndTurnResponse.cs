@@ -3,7 +3,6 @@ using Newtonsoft.Json;
 
 namespace Chess.Common.Messages
 {
-    [MessageType("end_turn")]
     public class EndTurnResponse : Message
     {
         [JsonProperty(PropertyName = "game_id")]
@@ -12,7 +11,7 @@ namespace Chess.Common.Messages
         [JsonProperty(PropertyName = "status")]
         public EndTurnStatus Status { get; set; }
 
-        public EndTurnResponse(Guid gameId, EndTurnStatus status)
+        public EndTurnResponse(Guid gameId, EndTurnStatus status) : base("end_turn")
         {
             GameId = gameId;
             Status = status;

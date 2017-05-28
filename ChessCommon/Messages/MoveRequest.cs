@@ -3,7 +3,6 @@ using Newtonsoft.Json;
 
 namespace Chess.Common.Messages
 {
-    [MessageType("move")]
     public class MoveRequest : Message
     {
         [JsonProperty(PropertyName = "game_id")]
@@ -11,5 +10,11 @@ namespace Chess.Common.Messages
 
         [JsonProperty(PropertyName = "move")]
         public string Move { get; set; }
+
+        public MoveRequest(Guid gameId, string move) : base("move")
+        {
+            GameId = gameId;
+            Move = move;
+        }
     }
 }

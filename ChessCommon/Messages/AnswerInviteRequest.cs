@@ -3,7 +3,6 @@ using Newtonsoft.Json;
 
 namespace Chess.Common.Messages
 {
-    [MessageType("answer_invite")]
     public class AnswerInviteRequest : Message
     {
         [JsonProperty(PropertyName = "player_id")]
@@ -11,5 +10,11 @@ namespace Chess.Common.Messages
 
         [JsonProperty(PropertyName = "answer")]
         public InviteAnswer Answer { get; set; }
+
+        public AnswerInviteRequest(Guid playerId, InviteAnswer answer) : base("answer_invite")
+        {
+            PlayerId = playerId;
+            Answer = answer;
+        }
     }
 }

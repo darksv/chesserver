@@ -2,10 +2,14 @@
 
 namespace Chess.Common.Messages
 {
-    [MessageType("join")]
     public class JoinRequest : Message
     {
         [JsonProperty(PropertyName = "nick")]
         public string Nick { get; set; }
+
+        public JoinRequest(string nick) : base("join")
+        {
+            Nick = nick;
+        }
     }
 }
