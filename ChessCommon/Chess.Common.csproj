@@ -37,9 +37,32 @@
     <Reference Include="System.Core" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="ClientStatus.cs" />
-    <Compile Include="Messages.cs" />
+    <Compile Include="Messages\AnswerInviteRequest.cs" />
+    <Compile Include="Messages\AnswerInviteResponse.cs" />
+    <Compile Include="Messages\AnswerInviteStatus.cs" />
+    <Compile Include="Messages\ClientStatus.cs" />
+    <Compile Include="Messages\EndTurnRequest.cs" />
+    <Compile Include="Messages\EndTurnResponse.cs" />
+    <Compile Include="Messages\EndTurnStatus.cs" />
+    <Compile Include="Messages\GameNotification.cs" />
+    <Compile Include="Messages\GetPlayersResponse.cs" />
+    <Compile Include="Messages\InviteAnswer.cs" />
+    <Compile Include="Messages\InviteNotification.cs" />
+    <Compile Include="Messages\JoinRequest.cs" />
+    <Compile Include="Messages\JoinResponse.cs" />
+    <Compile Include="Messages\JoinStatus.cs" />
+    <Compile Include="Messages\Message.cs" />
+    <Compile Include="Messages\MessageTypeAttribute.cs" />
+    <Compile Include="Messages\MoveNotification.cs" />
+    <Compile Include="Messages\MoveRequest.cs" />
+    <Compile Include="Messages\MoveResponse.cs" />
+    <Compile Include="Messages\MoveStatus.cs" />
+    <Compile Include="Messages\PlayerItem.cs" />
+    <Compile Include="Messages\PlayerNotification.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="Messages\SendInviteRequest.cs" />
+    <Compile Include="Messages\SendInviteResponse.cs" />
+    <Compile Include="Messages\SendInviteStatus.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="api.md" />
