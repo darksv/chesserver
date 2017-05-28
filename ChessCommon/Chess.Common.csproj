@@ -40,7 +40,7 @@
     <Compile Include="Messages\AnswerInviteRequest.cs" />
     <Compile Include="Messages\AnswerInviteResponse.cs" />
     <Compile Include="Messages\AnswerInviteStatus.cs" />
-    <Compile Include="Messages\ClientStatus.cs" />
+    <Compile Include="ClientStatus.cs" />
     <Compile Include="Messages\EndTurnRequest.cs" />
     <Compile Include="Messages\EndTurnResponse.cs" />
     <Compile Include="Messages\EndTurnStatus.cs" />
