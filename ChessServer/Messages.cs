@@ -13,7 +13,7 @@ namespace ChessServer
 
     public class MessageTypeAttribute : Attribute
     {
-        public string Type { get; private set; }
+        public string Type { get; }
 
         public MessageTypeAttribute(string type)
         {
@@ -153,6 +153,9 @@ namespace ChessServer
     [MessageType("move")]
     public class MoveRequest : Message
     {
+        [JsonProperty(PropertyName = "game_id")]
+        public Guid GameId { get; set; }
+
         [JsonProperty(PropertyName = "move")]
         public string Move { get; set; }
     }
@@ -160,7 +163,8 @@ namespace ChessServer
     public enum MoveStatus
     {
         Success,
-        NotOnGame,
+        GameNotExist,
+        NotPlayersTurn,
         InvalidMove
     }
 
@@ -178,21 +182,79 @@ namespace ChessServer
 
     #endregion
 
+    #region End turn command
+
+    [MessageType("end_turn")]
+    public class EndTurnRequest : Message
+    {
+        [JsonProperty(PropertyName = "game_id")]
+        public Guid GameId { get; set; }
+    }
+
+    public enum EndTurnStatus
+    {
+        Success,
+        GameNotExist,
+        NotPlayersTurn
+    }
+
+    [MessageType("end_turn")]
+    public class EndTurnResponse : Message
+    {
+        [JsonProperty(PropertyName = "game_id")]
+        public Guid GameId { get; set; }
+
+        [JsonProperty(PropertyName = "status")]
+        public EndTurnStatus Status { get; set; }
+
+        public EndTurnResponse(Guid gameId, EndTurnStatus status)
+        {
+            GameId = gameId;
+            Status = status;
+        }
+    }
+
+    #endregion
+
     #region Move Notification
 
     [MessageType("move_done")]
     public class MoveNotification : Message
     {
-        [JsonProperty(PropertyName = "player_id")]
-        public Guid PlayerId { get; set; }
+        [JsonProperty(PropertyName = "game_id")]
+        public Guid GameId { get; set; }
 
         [JsonProperty(PropertyName = "move")]
         public string Move { get; set; }
 
-        public MoveNotification(Guid playerId, string move)
+        public MoveNotification(Guid gameId, string move)
         {
-            PlayerId = playerId;
+            GameId = gameId;
             Move = move;
+        }
+    }
+
+    #endregion
+
+    #region Game notification
+
+    [MessageType("game")]
+    public class GameNotification : Message
+    {
+        [JsonProperty(PropertyName = "game_id")]
+        public Guid GameId { get; set; }
+
+        [JsonProperty(PropertyName = "white_player_id")]
+        public Guid WhitePlayerId { get; set; }
+
+        [JsonProperty(PropertyName = "black_player_id")]
+        public Guid BlackPlayerId { get; set; }
+
+        public GameNotification(Guid gameId, Guid whitePlayerId, Guid blackPlayerId)
+        {
+            GameId = gameId;
+            WhitePlayerId = whitePlayerId;
+            BlackPlayerId = blackPlayerId;
         }
     }
 

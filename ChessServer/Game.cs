@@ -1,4 +1,6 @@
-﻿namespace ChessServer
+﻿using System;
+
+namespace ChessServer
 {
     public enum Color
     {
@@ -8,6 +10,7 @@
 
     public class Game
     {
+        public Guid Id { get; } = Guid.NewGuid();
         public Client WhitePlayer { get; }
         public Client BlackPlayer { get; }
         public Color CurrentTurn { get; set; }

@@ -38,12 +38,23 @@ API
     - 1 - InvalidPlayer
     - 2 - NotInvited
 
+### Game created notification
+  - [S] `{"type":"game","white_player_id":"GUID","black_player_id":"GUID"}`
+
 ### Send move
-  - [C] `{"type":"move","player_id":"GUID","move":"???"}`
-  - [S] `{"type":"move","player_id":"GUID","status":0}`
+  - [C] `{"type":"move","game_id":"GUID","move":"???"}`
+  - [S] `{"type":"move","game_id":"GUID","status":0}`
     - 0 - Success
-    - 1 - NotOnGame
-    - 2 - InvalidMove
+    - 1 - GameNotExist
+    - 2 - NotPlayersTurn
+    - 3 - InvalidMove
+
+### End turn
+  - [C] `{"type":"end_turn","game_id":"GUID"}`
+  - [S] `{"type":"end_turn","game_id":"GUID","status":0}`
+    - 0 - Success
+    - 1 - GameNotExist
+    - 2 - NotPlayersTurn
 
 ### Move from opponent notification
    - [S] `{"type":"move_done","player_id":"GUID","move":"???"}`

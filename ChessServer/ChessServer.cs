@@ -27,7 +27,7 @@ namespace ChessServer
                 {"answer_invite", HandleAnswerInvite},
                 {"get_players", HandleGetPlayers},
                 {"move", HandleMove},
-                {"ready", HandleReady}
+                {"end_turn", HandleEndTurn}
             };
         }
 
@@ -226,8 +226,9 @@ namespace ChessServer
 
                 _games.Add(game);
 
-                Log($"{client.Nick} has accepted {invitingClient.Nick}'s invitation");
-                Log($"Created game: {client.Nick} with {invitingClient.Nick}");
+                var notification = new GameNotification(game.Id, game.WhitePlayer.Id, game.BlackPlayer.Id);
+                Send(invitingClient, notification);
+                Send(client, notification);
             }
             else
             {
@@ -260,56 +261,44 @@ namespace ChessServer
         {
             var request = JsonConvert.DeserializeObject<MoveRequest>(data);
 
-            if (client.Status != ClientStatus.OnGame)
-            {
-                return;
-            }
-
-            var game = _games
-                .FirstOrDefault(g => g.InvolvesPlayer(client));
-
+            var game = _games.FirstOrDefault(g => g.Id == request.GameId);
             if (game == null)
             {
-                Send(client, new MoveResponse(MoveStatus.NotOnGame));
+                Send(client, new MoveResponse(MoveStatus.GameNotExist));
                 return;
             }
 
             if (!game.CanDoMove(client))
             {
-                Send(client, new MoveResponse(MoveStatus.InvalidMove));
+                Send(client, new MoveResponse(MoveStatus.NotPlayersTurn));
                 return;
             }
 
             // TODO: check move
 
             Send(client, new MoveResponse(MoveStatus.Success));
-            Send(game.GetOpponentFor(client), new MoveNotification(client.Id, request.Move));
+            Send(game.GetOpponentFor(client), new MoveNotification(game.Id, request.Move));
         }
 
-        private void HandleReady(Client client, string data)
+        private void HandleEndTurn(Client client, string data)
         {
-            if (client.Status != ClientStatus.OnGame)
-            {
-                return;
-            }
+            var request = JsonConvert.DeserializeObject<EndTurnRequest>(data);
 
-            var game = _games
-                .FirstOrDefault(g => g.InvolvesPlayer(client));
-
+            var game = _games.FirstOrDefault(g => g.Id == request.GameId);
             if (game == null)
             {
-                // TODO: finish HIM!
+                Send(client, new EndTurnResponse(request.GameId, EndTurnStatus.GameNotExist));
                 return;
             }
 
             if (!game.CanDoMove(client))
             {
-                // TODO: finish!
+                Send(client, new EndTurnResponse(game.Id, EndTurnStatus.NotPlayersTurn));
                 return;
             }
 
             game.SwitchTurn();
-            Log($"Player {client.Nick} finished his move!");
+            Send(client, new EndTurnResponse(game.Id, EndTurnStatus.Success));
         }
 
         #endregion
