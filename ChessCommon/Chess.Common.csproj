@@ -37,6 +37,7 @@
     <Reference Include="System.Core" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="MessageHelpers.cs" />
     <Compile Include="Messages\AnswerInviteRequest.cs" />
     <Compile Include="Messages\AnswerInviteResponse.cs" />
     <Compile Include="Messages\AnswerInviteStatus.cs" />

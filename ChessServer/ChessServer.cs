@@ -80,19 +80,8 @@ namespace Chess.Server
                 client = _clients.FirstOrDefault(p => p.Socket == args.ClientSocket);
             }
 
-            Message message;
-            try
-            {
-                message = JsonConvert.DeserializeObject<Message>(args.Message);
-            }
-            catch (Exception)
-            {
-                Log("Error: invalid message format");
-                return;
-            }
-
-            var messageType = message?.Type ?? string.Empty;
-            if (_handlers.TryGetValue(messageType, out var handler))
+            var messageType = MessageHelpers.ExtractType(args.Message);
+            if (messageType != null && _handlers.TryGetValue(messageType, out var handler))
             {
                 handler(client, args.Message);
             }
@@ -302,7 +291,7 @@ namespace Chess.Server
         private void Send<T>(Client client, T message)
             where T : Message
         {
-            _server.Send(client.Socket, JsonConvert.SerializeObject(message) + "\n");
+            _server.Send(client.Socket, MessageHelpers.SerializeMessage(message));
         }
 
         private bool IsNickTaken(string nick)
