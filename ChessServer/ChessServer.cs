@@ -140,7 +140,6 @@ namespace ChessServer
 
         private void HandleLeave(Client client, string args)
         {
-            client.Nick = string.Empty;
             client.Status = ClientStatus.Left;
             NotifyClientChange(client);
 
@@ -341,7 +340,7 @@ namespace ChessServer
         {
             lock (_lock)
             {
-                return _clients.Any(p => p.Nick == nick);
+                return _clients.Any(p => p.Status != ClientStatus.Left && p.Status != ClientStatus.Disconnected && p.Nick == nick);
             }
         }
 
