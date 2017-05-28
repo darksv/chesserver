@@ -302,23 +302,7 @@ namespace Chess.Server
         private void Send<T>(Client client, T message)
             where T : Message
         {
-            _server.Send(client.Socket, MakeResponse(message));
-        }
-
-        private string MakeResponse<T>(T value) 
-            where T : Message
-        {
-            if (string.IsNullOrEmpty(value.Type))
-            {
-                var messageTypeAttribute = typeof(T)
-                    .GetCustomAttributes(false)
-                    .OfType<MessageTypeAttribute>()
-                    .FirstOrDefault();
-                value.Type = messageTypeAttribute?.Type ?? string.Empty;
-            }
-
-            var json = JsonConvert.SerializeObject(value, Formatting.None);
-            return $"{json}\n";
+            _server.Send(client.Socket, MessageUtils.MakeMessage(message));
         }
 
         private bool IsNickTaken(string nick)
