@@ -8,7 +8,7 @@ namespace Chess.Common.Messages
         [JsonProperty(PropertyName = "game_id")]
         public Guid GameId { get; }
 
-        [JsonProperty(PropertyName = "game_id")]
+        [JsonProperty(PropertyName = "message")]
         public string Message { get; set; }
 
         public SendChatMessageRequest(Guid gameId, string message) : base("send_chat_message")
