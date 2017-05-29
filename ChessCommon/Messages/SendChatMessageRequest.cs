@@ -11,6 +11,7 @@ namespace Chess.Common.Messages
         [JsonProperty(PropertyName = "message")]
         public string Message { get; set; }
 
+        [JsonConstructor]
         public SendChatMessageRequest(Guid gameId, string message) : base("send_chat_message")
         {
             GameId = gameId;
