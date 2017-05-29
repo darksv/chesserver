@@ -84,6 +84,7 @@ namespace Chess.Server
             if (messageType != null && _handlers.TryGetValue(messageType, out var handler))
             {
                 handler(client, args.Message);
+                Log($"Handled {messageType} command");
             }
             else
             {
