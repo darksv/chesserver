@@ -6,13 +6,13 @@ namespace Chess.Common.Messages
     public class ChatMessageNotification : Message
     {
         [JsonProperty(PropertyName = "game_id")]
-        public Guid GameId { get; }
+        public Guid GameId { get; set; }
 
         [JsonProperty(PropertyName = "player_id")]
-        public Guid PlayerId { get; }
+        public Guid PlayerId { get; set; }
 
         [JsonProperty(PropertyName = "status")]
-        public string Message { get; }
+        public string Message { get; set; }
 
         public ChatMessageNotification(Guid playerId, string message) : base("chat_message")
         {

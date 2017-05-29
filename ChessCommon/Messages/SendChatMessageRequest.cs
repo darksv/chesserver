@@ -6,7 +6,7 @@ namespace Chess.Common.Messages
     public class SendChatMessageRequest : Message
     {
         [JsonProperty(PropertyName = "game_id")]
-        public Guid GameId { get; }
+        public Guid GameId { get; set; }
 
         [JsonProperty(PropertyName = "message")]
         public string Message { get; set; }

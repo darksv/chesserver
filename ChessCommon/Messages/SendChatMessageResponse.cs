@@ -6,10 +6,10 @@ namespace Chess.Common.Messages
     public class SendChatMessageResponse : Message
     {
         [JsonProperty(PropertyName = "game_id")]
-        public Guid GameId { get; }
+        public Guid GameId { get; set; }
 
         [JsonProperty(PropertyName = "status")]
-        public SendMessageStatus Status { get; }
+        public SendMessageStatus Status { get; set; }
 
         public SendChatMessageResponse(Guid gameId, SendMessageStatus status) : base("send_chat_message")
         {
