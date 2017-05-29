@@ -299,8 +299,6 @@ namespace Chess.Server
                 {
                     Send(clientToNotify, notification);
                 }
-
-                Send(client, new SendChatMessageResponse(SendMessageStatus.Success));
             }
             else
             {
@@ -313,8 +311,9 @@ namespace Chess.Server
 
                 var opponent = game.GetOpponentFor(client);
                 Send(opponent, notification);
-                Send(client, new SendChatMessageResponse(SendMessageStatus.Success));
             }
+
+            Send(client, new SendChatMessageResponse(SendMessageStatus.Success));
         }
 
         #endregion
