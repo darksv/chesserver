@@ -9,9 +9,9 @@ namespace Chess.Common.Messages
         public Guid GameId { get; set; }
 
         [JsonProperty(PropertyName = "move")]
-        public string Move { get; set; }
+        public Move Move { get; set; }
 
-        public MoveRequest(Guid gameId, string move) : base("move")
+        public MoveRequest(Guid gameId, Move move) : base("move")
         {
             GameId = gameId;
             Move = move;
