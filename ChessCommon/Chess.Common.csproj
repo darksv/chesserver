@@ -9,8 +9,9 @@
     <AppDesignerFolder>Properties</AppDesignerFolder>
     <RootNamespace>Chess.Common</RootNamespace>
     <AssemblyName>Chess.Common</AssemblyName>
-    <TargetFrameworkVersion>v4.6.1</TargetFrameworkVersion>
+    <TargetFrameworkVersion>v4.6</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
+    <TargetFrameworkProfile />
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
     <DebugSymbols>true</DebugSymbols>
@@ -41,6 +42,11 @@
     <Compile Include="Messages\AnswerInviteRequest.cs" />
     <Compile Include="Messages\AnswerInviteResponse.cs" />
     <Compile Include="Messages\AnswerInviteStatus.cs" />
+    <Compile Include="Messages\ChatMessageNotification.cs" />
+    <Compile Include="Messages\Move.cs" />
+    <Compile Include="Messages\SendChatMessageResponse.cs" />
+    <Compile Include="Messages\SendChatMessageRequest.cs" />
+    <Compile Include="Messages\SendMessageStatus.cs" />
     <Compile Include="PlayerStatus.cs" />
     <Compile Include="Messages\EndTurnRequest.cs" />
     <Compile Include="Messages\EndTurnResponse.cs" />
