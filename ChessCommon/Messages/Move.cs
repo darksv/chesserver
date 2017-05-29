@@ -4,7 +4,7 @@ namespace Chess.Common.Messages
 {
     public class Move
     {
-        [JsonProperty(PropertyName = "pawn_id")]
+        [JsonProperty(PropertyName = "piece_id")]
         public int PieceId { get; set; }
 
         [JsonProperty(PropertyName = "x")]
