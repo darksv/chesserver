@@ -21,6 +21,7 @@ namespace Chess.Common.Messages
             Message = message;
         }
 
+        [JsonConstructor]
         public ChatMessageNotification(Guid playerId, Guid gameId, string message) : base("chat_message")
         {
             PlayerId = playerId;

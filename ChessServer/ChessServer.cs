@@ -292,7 +292,7 @@ namespace Chess.Server
         {
             var request = JsonConvert.DeserializeObject<SendChatMessageRequest>(data);
 
-            var notification = new ChatMessageNotification(request.GameId, client.Id, request.Message);
+            var notification = new ChatMessageNotification(client.Id, request.GameId, request.Message);
             if (request.GameId == Guid.Empty)
             {
                 foreach (var clientToNotify in _clients)
