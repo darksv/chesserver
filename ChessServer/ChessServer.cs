@@ -28,7 +28,8 @@ namespace Chess.Server
                 {"answer_invite", HandleAnswerInvite},
                 {"get_players", HandleGetPlayers},
                 {"move", HandleMove},
-                {"end_turn", HandleEndTurn}
+                {"end_turn", HandleEndTurn},
+                {"send_chat_message", HandleSendChatMessage}
             };
         }
 
@@ -285,6 +286,35 @@ namespace Chess.Server
 
             game.SwitchTurn();
             Send(client, new EndTurnResponse(game.Id, EndTurnStatus.Success));
+        }
+
+        private void HandleSendChatMessage(Client client, string data)
+        {
+            var request = JsonConvert.DeserializeObject<SendChatMessageRequest>(data);
+
+            var notification = new ChatMessageNotification(request.GameId, client.Id, request.Message);
+            if (request.GameId == Guid.Empty)
+            {
+                foreach (var clientToNotify in _clients)
+                {
+                    Send(clientToNotify, notification);
+                }
+
+                Send(client, new SendChatMessageResponse(SendMessageStatus.Success));
+            }
+            else
+            {
+                var game = _games.FirstOrDefault(g => g.InvolvesPlayer(client));
+                if (game == null)
+                {
+                    Send(client, new SendChatMessageResponse(SendMessageStatus.Error));
+                    return;
+                }
+
+                var opponent = game.GetOpponentFor(client);
+                Send(opponent, notification);
+                Send(client, new SendChatMessageResponse(SendMessageStatus.Success));
+            }
         }
 
         #endregion

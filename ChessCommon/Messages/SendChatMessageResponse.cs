@@ -11,14 +11,16 @@ namespace Chess.Common.Messages
         [JsonProperty(PropertyName = "status")]
         public SendMessageStatus Status { get; }
 
-        public SendChatMessageResponse(Guid gameId) : base("send_chat_message")
+        public SendChatMessageResponse(Guid gameId, SendMessageStatus status) : base("send_chat_message")
         {
             GameId = gameId;
+            Status = status;
         }
 
-        public SendChatMessageResponse() : base("send_chat_message")
+        public SendChatMessageResponse(SendMessageStatus status) : base("send_chat_message")
         {
             GameId = Guid.Empty;
+            Status = Status;
         }
     }
 }
