@@ -19,6 +19,7 @@ namespace Chess.Server
         {
             WhitePlayer = whitePlayer;
             BlackPlayer = blackPlayer;
+            CurrentTurn = Color.White;
         }
 
         public bool InvolvesPlayer(Client player)
