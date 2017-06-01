@@ -43,6 +43,7 @@
     <Compile Include="Messages\AnswerInviteResponse.cs" />
     <Compile Include="Messages\AnswerInviteStatus.cs" />
     <Compile Include="Messages\ChatMessageNotification.cs" />
+    <Compile Include="Messages\EndTurnNotification.cs" />
     <Compile Include="Messages\Move.cs" />
     <Compile Include="Messages\PromoteNotification.cs" />
     <Compile Include="Messages\PromoteRequest.cs" />

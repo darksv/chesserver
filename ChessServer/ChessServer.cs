@@ -310,6 +310,7 @@ namespace Chess.Server
 
             game.SwitchTurn();
             Send(client, new EndTurnResponse(game.Id, EndTurnStatus.Success));
+            Send(game.GetOpponentFor(client), new EndTurnNotification(game.Id));
         }
 
         private void HandleSendChatMessage(Client client, string data)
