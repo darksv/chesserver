@@ -28,6 +28,7 @@ namespace Chess.Server
                 {"answer_invite", HandleAnswerInvite},
                 {"get_players", HandleGetPlayers},
                 {"move", HandleMove},
+                {"promote", HandlePromote},
                 {"end_turn", HandleEndTurn},
                 {"send_chat_message", HandleSendChatMessage}
             };
@@ -265,6 +266,29 @@ namespace Chess.Server
 
             Send(client, new MoveResponse(MoveStatus.Success));
             Send(game.GetOpponentFor(client), new MoveNotification(game.Id, request.Move));
+        }
+
+        private void HandlePromote(Client client, string data)
+        {
+            var request = JsonConvert.DeserializeObject<PromoteRequest>(data);
+
+            var game = _games.FirstOrDefault(g => g.Id == request.GameId);
+            if (game == null)
+            {
+                Send(client, new PromoteResponse());
+                return;
+            }
+
+            if (!game.CanDoMove(client))
+            {
+                Send(client, new PromoteResponse(game.Id));
+                return;
+            }
+
+            // TODO: check promotion
+
+            Send(client, new MoveResponse(MoveStatus.Success));
+            Send(game.GetOpponentFor(client), new PromoteNotification(game.Id, request.PieceId, request.PromoteTo));
         }
 
         private void HandleEndTurn(Client client, string data)

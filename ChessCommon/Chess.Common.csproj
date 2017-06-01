@@ -44,6 +44,9 @@
     <Compile Include="Messages\AnswerInviteStatus.cs" />
     <Compile Include="Messages\ChatMessageNotification.cs" />
     <Compile Include="Messages\Move.cs" />
+    <Compile Include="Messages\PromoteNotification.cs" />
+    <Compile Include="Messages\PromoteRequest.cs" />
+    <Compile Include="Messages\PromoteResponse.cs" />
     <Compile Include="Messages\SendChatMessageResponse.cs" />
     <Compile Include="Messages\SendChatMessageRequest.cs" />
     <Compile Include="Messages\SendMessageStatus.cs" />
