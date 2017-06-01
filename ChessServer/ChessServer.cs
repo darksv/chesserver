@@ -287,7 +287,7 @@ namespace Chess.Server
 
             // TODO: check promotion
 
-            Send(client, new MoveResponse(MoveStatus.Success));
+            Send(client, new PromoteResponse());
             Send(game.GetOpponentFor(client), new PromoteNotification(game.Id, request.PieceId, request.PromoteTo));
         }
 
