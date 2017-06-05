@@ -5,5 +5,6 @@
         Success,
         InvalidPlayer,
         NotInvited,
+        AlreadyOnGame
     }
 }

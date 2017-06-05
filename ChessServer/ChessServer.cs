@@ -194,6 +194,12 @@ namespace Chess.Server
                 return;
             }
 
+            if (invitingClient.Status != PlayerStatus.Joined)
+            {
+                Send(client, new AnswerInviteResponse(request.PlayerId, AnswerInviteStatus.AlreadyOnGame));
+                return;
+            }
+
             if (!_invitations.Any(i => i.InvitedPlayer == client && i.InvitingPlayer == invitingClient &&
                                        !i.Answer.HasValue))
             {
@@ -287,7 +293,7 @@ namespace Chess.Server
 
             // TODO: check promotion
 
-            Send(client, new PromoteResponse());
+            Send(client, new PromoteResponse(game.Id));
             Send(game.GetOpponentFor(client), new PromoteNotification(game.Id, request.PieceId, request.PromoteTo));
         }
 
